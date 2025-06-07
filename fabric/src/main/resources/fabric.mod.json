@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "rarecandylib",
+  "version": "${version}",
+  "name": "Rare Candy Lib",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "Waterpicker"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": ""
+  },
+  "license": "Insert License Here",
+  "icon": "assets/examplemod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "generations.gg.rarecandylib.fabric.ExampleModFabric"
+    ]
+  },
+  "mixins": [
+    "rarecandylib.mixins.json",
+    "rarecandylib-common.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.20.1"
+  },
+  "suggests": {
+    "cobbelmon": ">=1.5.2"
+  }
+}

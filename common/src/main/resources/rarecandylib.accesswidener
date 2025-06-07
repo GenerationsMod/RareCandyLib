@@ -1,0 +1,5 @@
+accessWidener   v2  named
+accessible field net/minecraft/world/level/block/entity/BlockEntityType validBlocks Ljava/util/Set;
+mutable field net/minecraft/world/level/block/entity/BlockEntityType validBlocks Ljava/util/Set;
+mutable field net/minecraft/world/level/block/Block stateDefinition Lnet/minecraft/world/level/block/state/StateDefinition;
+accessible class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
