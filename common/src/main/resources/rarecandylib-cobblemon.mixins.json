@@ -1,0 +1,21 @@
+{
+  "required": false,
+  "package": "generations.gg.rarecandylib.cobblemon.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "generations.gg.rarecandylib.cobblemon.CobblemonMixinPlugin",
+  "minVersion": "0.8",
+  "client": [
+    "ModelAssetVariationMixin",
+    "PokemonClientDelegateMixin",
+    "PokemonItemRendererMixin",
+    "PokemonOnShoulderRendererCompanionAccessorMixin",
+    "PokemonOnShoulderRenderMixin",
+    "PosableStateMixin"
+  ],
+  "mixins": [
+
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

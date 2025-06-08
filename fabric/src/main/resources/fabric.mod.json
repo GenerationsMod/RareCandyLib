@@ -16,18 +16,20 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "generations.gg.rarecandylib.fabric.ExampleModFabric"
+      "generations.gg.rarecandylib.fabric.RareCandyLibFabric"
+    ],
+    "client": [
+      "generations.gg.rarecandylib.fabric.client.RareCandyLibFabricClient"
     ]
   },
   "mixins": [
-    "rarecandylib.mixins.json",
     "rarecandylib-common.mixins.json"
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.20.1"
+    "minecraft": ">=1.21.1"
   },
   "suggests": {
-    "cobbelmon": ">=1.5.2"
+    "cobbelmon": ">=1.6.1"
   }
 }

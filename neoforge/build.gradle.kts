@@ -40,6 +40,7 @@ loom {
 
 repositories {
     maven("https://thedarkcolour.github.io/KotlinForForge/")
+    mavenCentral()
 }
 
 dependencies {

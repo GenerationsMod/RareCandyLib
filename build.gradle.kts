@@ -28,6 +28,7 @@ subprojects {
 
     val loom = project.extensions.getByName<LoomGradleExtensionAPI>("loom")
     loom.silentMojangMappingsLicense()
+    loom.mixin.useLegacyMixinAp.set(false)
 
     repositories {
         mavenCentral()
@@ -39,8 +40,8 @@ subprojects {
         maven("https://maven.impactdev.net/repository/development/")
         maven("https://maven.generations.gg/snapshots")
         maven("https://maven.generations.gg/releases")
-        maven("https://maven.generations.gg/snapshots")
-        maven("https://maven.generations.gg/releases")
+        maven("https://generationsmaven.firstdark.dev/snapshots")
+        maven("https://generationsmaven.firstdark.dev/releases")
         maven("https://generationsmaven.firstdark.dev/snapshots")
         maven("https://generationsmaven.firstdark.dev/releases")
         maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
@@ -61,12 +62,12 @@ subprojects {
     java {
         withSourcesJar()
 
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     tasks.withType<JavaCompile>().configureEach {
-        options.release.set(17)
+        options.release.set(21)
     }
 
     publishing {
