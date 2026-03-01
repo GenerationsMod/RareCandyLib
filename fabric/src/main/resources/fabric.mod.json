@@ -23,7 +23,8 @@
     ]
   },
   "mixins": [
-    "rarecandylib-common.mixins.json"
+    "rarecandylib-common.mixins.json",
+    "rarecandylib-cobblemon.mixins.json"
   ],
   "depends": {
     "fabric": "*",

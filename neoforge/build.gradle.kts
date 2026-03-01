@@ -51,27 +51,45 @@ dependencies {
 
 //    modRuntimeOnly("me.djtheredstoner:DevAuth-forge-latest:${project.properties["devauth_version"]}")
 
-    forgeRuntimeLibrary("shadowBundle"("gg.generations", "RareCandy", "${project.properties["rarecandy"]}"){isTransitive = false})!!
-
-    // Generations-Core Forge
-    modApi("dev.architectury:architectury-neoforge:${project.properties["architectury_version"]}")
+    "shadowBundle"(implementation(localLib("rarecandy", "${project.properties["rarecandy"]}"))!!)
 
     //Cobblemon
     implementation("thedarkcolour:kotlinforforge-neoforge:5.8.0")
     modImplementation("com.cobblemon:neoforge:${project.properties["cobblemon_version"]}")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.3.5")
+    include("org.jetbrains.kotlinx:kotlinx-io-core:0.3.5")
+    include(implementation("com.moulberry:mixinconstraints:1.0.9")!!)
 }
 
 tasks {
     processResources {
         inputs.property("version", project.version)
 
-        filesMatching("META-INF/mods.toml") {
-            expand(mapOf("version" to project.version))
+        filesMatching("META-INF/neoforge.mods.toml") {
+            expand(mutableMapOf(
+                "version" to project.version,
+                "neoforge" to project.properties["neoforge_version"],
+                "minecraft" to project.properties["minecraft_version"],
+                "cobblemon" to project.properties["cobblemon_version"],
+                "wthit" to project.properties["WTHIT"],
+                "description" to project.properties["description"]
+            ))
         }
     }
 
     shadowJar {
-        exclude("architectury.common.json", "com/example/examplemod/forge/datagen/**")
+        exclude("generations/gg/generations/core/generationscore/forge/datagen/**",
+            "org/lwjgl/system//**",
+            "org/lwjgl/BufferUtils.class",
+            "org/lwjgl/CLongBuffer.class",
+            "org/lwjgl/PointerBuffer.class",
+            "org/lwjgl/Version\$BuildType.class",
+            "org/lwjgl/Version.class",
+            "org/lwjgl/VersionImpl.class",
+            "org/lwjgl/package-info.class",
+            "architectury.common.json",
+            ".cache/**")
         configurations = listOf(project.configurations.getByName("shadowBundle"))
         archiveClassifier.set("dev-shadow")
     }
@@ -80,4 +98,8 @@ tasks {
         inputFile.set(shadowJar.get().archiveFile)
         dependsOn(shadowJar)
     }
+}
+
+private fun DependencyHandlerScope.localLib(name: String, version: String): Any {
+    return files("../libs/$name-$version.jar")
 }

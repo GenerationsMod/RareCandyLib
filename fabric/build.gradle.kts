@@ -48,12 +48,8 @@ dependencies {
     "common"(project(":common", "namedElements")) { isTransitive = false }
     "shadowBundle"(project(":common", "transformProductionFabric"))
 
-//    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${project.properties["devauth_version"]}")
-
-    implementation("shadowBundle"("gg.generations", "RareCandy", "${project.properties["rarecandy"]}") {isTransitive = false})!!
-
-    // Generations-Core Fabric
-    modApi("dev.architectury:architectury-fabric:${project.properties["architectury_version"]}")
+    "shadowBundle"(implementation(localLib("rarecandy", "${project.properties["rarecandy"]}"))!!)
+    include(implementation("com.moulberry:mixinconstraints:1.0.9")!!)
 
     //Cobblemon
     modApi("com.cobblemon:fabric:${project.properties["cobblemon_version"]}")
@@ -65,12 +61,30 @@ tasks {
         inputs.property("version", project.version)
 
         filesMatching("fabric.mod.json") {
-            expand(mapOf("version" to project.version))
+            expand(mapOf(
+                "version" to project.version,
+                "fabricloader" to project.properties["fabric_loader_version"],
+                "minecraft" to project.properties["minecraft_version"],
+                "cobblemon" to project.properties["cobblemon_version"],
+                "wthit" to project.properties["WTHIT"],
+                "description" to project.properties["description"]
+            ))
+        }
+
+        from(rootProject.file("common/src/main/resources")) {
+            include("**/**")
+            duplicatesStrategy = DuplicatesStrategy.WARN
         }
     }
 
     shadowJar {
-        exclude("architectury.common.json", "com/example/examplemod/fabric/datagen/**")
+        exclude(mutableListOf(
+            "generations/gg/generations/core/generationscore/fabric/datagen/**",
+            "data/forge/**",
+            "data/generations_core/forge/**",
+            "architectury.common.json",
+            ".cache/**"
+        ))
         configurations = listOf(project.configurations.getByName("shadowBundle"))
         archiveClassifier.set("dev-shadow")
     }
@@ -80,4 +94,8 @@ tasks {
         inputFile.set(shadowJar.get().archiveFile)
         dependsOn(shadowJar)
     }
+}
+
+private fun DependencyHandlerScope.localLib(name: String, version: String): Any {
+    return files("../libs/$name-$version.jar")
 }

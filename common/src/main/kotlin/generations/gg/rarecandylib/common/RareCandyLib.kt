@@ -17,6 +17,5 @@ object RareCandyLib {
     fun init() {
     }
 
-    fun id(name: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, name)
-    fun String.asRclResource(): ResourceLocation = id(this)
+    fun String.id(): ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, this)
 }

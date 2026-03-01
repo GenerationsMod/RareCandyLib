@@ -2,9 +2,9 @@ import net.fabricmc.loom.api.LoomGradleExtensionAPI
 
 plugins {
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.9-SNAPSHOT" apply false
-    id("com.gradleup.shadow") version "8.3.5" apply false
-    kotlin("jvm") version ("2.0.10")
+    id("dev.architectury.loom") version "1.10-SNAPSHOT" apply false
+    id("com.gradleup.shadow") version "8.3.6" apply false
+    kotlin("jvm") version ("2.1.20")
     java
     idea
     `maven-publish`
@@ -33,19 +33,33 @@ subprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-        maven("https://maven.parchmentmc.org")
-        maven("https://maven.fabricmc.net/")
-        maven("https://maven.minecraftforge.net/")
-        maven("https://maven.neoforged.net/releases/")
-        maven("https://maven.impactdev.net/repository/development/")
+        maven("https://repo1.maven.org/maven2")
+        maven("https://jitpack.io")
         maven("https://maven.generations.gg/snapshots")
         maven("https://maven.generations.gg/releases")
         maven("https://generationsmaven.firstdark.dev/snapshots")
-        maven("https://generationsmaven.firstdark.dev/releases")
-        maven("https://generationsmaven.firstdark.dev/snapshots")
-        maven("https://generationsmaven.firstdark.dev/releases")
-        maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+        maven {
+            name = "generationsMavenReleases"
+            url = uri("https://generationsmaven.firstdark.dev/releases")
+        }
 
+        maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+        maven("https://cursemaven.com").content { includeGroup("curse.maven") }
+        maven("https://api.modrinth.com/maven").content { includeGroup("maven.modrinth") }
+        maven("https://maven.impactdev.net/repository/development/")
+        maven("https://maven.parchmentmc.org")
+        maven("https://maven2.bai.lol").content {
+            includeGroup("lol.bai")
+            includeGroup("mcp.mobius.waila")
+        }
+        maven("https://maven.tterrag.com/")
+        maven("https://nexus.resourcefulbees.com/repository/maven-public/")
+        maven("https://maven.neoforged.net/releases")
+        maven("https://jm.gserv.me/repository/maven-public/")
+        maven(
+            // location of the maven that hosts JEI files since January 2023
+            url = "https://maven.blamejared.com/"
+        )
     }
 
     @Suppress("UnstableApiUsage")
@@ -56,7 +70,7 @@ subprojects {
             parchment("org.parchmentmc.data:parchment-$minecraftVersion:${project.properties["parchment"]}@zip")
         })
 
-        compileOnly("org.jetbrains:annotations:24.1.0")
+        compileOnly("org.jetbrains:annotations:26.0.1")
     }
 
     java {
@@ -70,24 +84,5 @@ subprojects {
         options.release.set(21)
     }
 
-    publishing {
-        publications.create<MavenPublication>("mavenJava") {
-            artifactId = base.archivesName.get()
-            from(components["java"])
-        }
-
-        repositories {
-            mavenLocal()
-            maven {
-                val releasesRepoUrl = "https://example.com/releases"
-                val snapshotsRepoUrl = "https://example.com/snapshots"
-                url = uri(if (project.version.toString().endsWith("SNAPSHOT") || project.version.toString().startsWith("0")) snapshotsRepoUrl else releasesRepoUrl)
-                name = "ExampleRepo"
-                credentials {
-                    username = project.properties["repoLogin"]?.toString()
-                    password = project.properties["repoPassword"]?.toString()
-                }
-            }
-        }
-    }
+    kotlin.jvmToolchain(21)
 }

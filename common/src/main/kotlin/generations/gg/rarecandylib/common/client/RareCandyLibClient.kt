@@ -1,30 +1,24 @@
 package generations.gg.rarecandylib.common.client
 
-import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
-import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
+import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.BufferUploader
-import dev.architectury.registry.ReloadListenerRegistry
-import generations.gg.rarecandylib.common.client.model.RareCandyBone
-import generations.gg.generations.core.generationscore.common.client.model.RunnableKeybind
-import generations.gg.rarecandylib.cobblemon.Pipelines
-import generations.gg.rarecandylib.common.RareCandyLib.asRclResource
-import generations.gg.rarecandylib.common.client.util.MinecraftClientGameProvider
-import generations.gg.rarecandylib.cobblemon.client.GenerationsClientMolangFunctions
-import generations.gg.rarecandylib.common.client.model.CompiledModelLoader
-import generations.gg.rarecandylib.common.client.model.ModelRegistry
-import generations.gg.rarecandylib.common.client.texture.MinecraftTextureLoader
+import generations.gg.rarecandylib.common.RareCandyLib.LOGGER
+import generations.gg.rarecandylib.common.RareCandyLib.id
+import generations.gg.rarecandylib.common.client.render.RenderStateRecord
+import generations.gg.rarecandylib.common.client.render.rarecandy.MinecraftClientGameProvider
+import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
+import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines
 import gg.generations.rarecandy.pokeutils.reader.ITextureLoader
 import gg.generations.rarecandy.renderer.rendering.RareCandy
 import gg.generations.rarecandy.renderer.rendering.RenderStage
+import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import net.minecraft.client.model.geom.ModelPart
 import net.minecraft.core.BlockPos
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.packs.PackType
+import net.minecraft.core.Holder
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.phys.Vec3
-import org.lwjgl.glfw.GLFW
-import java.io.File
-import java.util.function.Function
+import org.joml.Matrix4f
 
 private operator fun BlockPos.minus(pos: BlockPos): BlockPos {
     return this.subtract(pos)
@@ -38,55 +32,107 @@ private operator fun Vec3.minus(vec3: Vec3): Vec3 {
     return this.subtract(vec3)
 }
 
+object MatrixCache {
+    var projectionMatrix = Matrix4f()
+    var viewMatrix = Matrix4f()
+}
+
 object RareCandyLibClient {
-    fun onInitialize(minecraft: Minecraft) {
+    lateinit var TOGGLE_CONDITIONS_KEY: KeyMapping
+    var toggleConditions: Boolean = true
 
-        ModelRegistry.init()
+    fun onInitialize(implementation: RareCandyLibClientImplementation) {
+//        if (GenerationsCore.CONFIG.client.useRenderDoc) {
+//            try {
+//                System.loadLibrary("renderdoc")
+//            } catch (e: UnsatisfiedLinkError) {
+//                LOGGER.warn("Attempted to use renderdoc without renderdoc installed.")
+//            }
+//        }
 
-        ITextureLoader.setInstance(MinecraftTextureLoader)
+        ITextureLoader.setInstance(GenerationsTextureLoader)
 
-        ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, CompiledModelLoader(), "model_registry".asRclResource())
-
-        setupClient(minecraft)
-
-        GenerationsClientMolangFunctions.addAnimationFunctions()
+        implementation.registerResourceReloader("model_registry".id(), CompiledModelLoader(), emptyList())
 
         RareCandy.DEBUG_THREADS = true
 
-        VaryingModelRepository.registerFactory(".pk", { resourceLocation, resource ->
-            ResourceLocation.fromNamespaceAndPath(resourceLocation.namespace, File(resourceLocation.path).getName()) to
-                    Function<Boolean, Bone> { bool ->
-                        (ModelPart(
-                            RareCandyBone.CUBE_LIST,
-                            mapOf("root" to RareCandyBone(resourceLocation))
-                        )) as Bone
-                    }
-        })
+        if(implementation.isModLoaded("cobbelmon")) generations.gg.rarecandylib.cobblemon.client.CobblemonModule.initialize()
+
+//        VaryingModelRepository.registerFactory(".pk", { resourceLocation, resource) -> new Pair<>(, b -> (Bone) new ModelPart(RareCandyBone.Companion.getCUBE_LIST(), Map.of("root", new RareCandyBone(resourceLocation))}));
+
     }
 
 
-    private fun setupClient(event: Minecraft) {
-        RunnableKeybind.create("toggleShaderRendering", GLFW.GLFW_KEY_P, "rendering", Pipelines::toggleRendering)
-
-        event.tell {
-            Pipelines.REGISTER.register(Pipelines::initGenerationsPipelines)
-
-            Pipelines.onInitialize(event.resourceManager)
+    fun onTick() {
+        if (::TOGGLE_CONDITIONS_KEY.isInitialized && TOGGLE_CONDITIONS_KEY.consumeClick()) {
+            toggleConditions = !toggleConditions
         }
     }
 
+
+    fun setupClient(event: Minecraft) {
+
+        event.tell({
+
+            ModelRegistry.init()
+
+            Pipelines.onInitialize(event.resourceManager)
+
+        })
+    }
+
+    private fun shouldRenderFpsPie(): Boolean {
+        return Minecraft.getInstance().options.reducedDebugInfo()
+            .get() /*&& Minecraft.getInstance().options.renderDebugCharts*/ && !Minecraft.getInstance().options.hideGui
+    }
+
+    fun secondRenderPass() {
+//        renderHighlightedPath(stack, Minecraft.getInstance().levelRenderer.ticks, camera)
+
+        RenderStateRecord.push()
+        RenderSystem.enableDepthTest()
+        RenderSystem.defaultBlendFunc()
+        RenderSystem.enableBlend()
+        renderRareCandyTransparent()
+        RenderStateRecord.pop()
+
+        ModelRegistry.worldRareCandy.end()
+
+        ModelRegistry.tick()
+    }
+
+    fun firstRenderPass() {
+        ModelRegistry.worldRareCandy.update(MinecraftClientGameProvider.timePassed)
+
+        MatrixCache.projectionMatrix = RenderSystem.getProjectionMatrix()
+        MatrixCache.viewMatrix = RenderSystem.getModelViewMatrix()
+
+        RenderStateRecord.push()
+
+        renderRareCandySolid()
+        renderRareCandyTransparent()
+
+        RenderStateRecord.pop()
+    }
+
+
     fun renderRareCandySolid() {
-        renderRareCandy(RenderStage.SOLID, false)
+        renderRareCandy(RenderStage.SOLID)
     }
 
-    fun renderRareCandyTransparent(clear: Boolean = false) {
-        renderRareCandy(RenderStage.TRANSPARENT, clear)
+    fun renderRareCandyTransparent() {
+        renderRareCandy(RenderStage.TRANSPARENT)
     }
 
-    private fun renderRareCandy(stage: RenderStage, clear: Boolean) {
+    fun renderRareCandy(stage: RenderStage) {
+
+        var startTime = System.currentTimeMillis()
+        RenderSystem.enableDepthTest()
         BufferUploader.reset()
 
-        ModelRegistry.worldRareCandy.render(stage, clear, MinecraftClientGameProvider.getTimePassed())
+        ModelRegistry.worldRareCandy.render(stage, false)
+        if (shouldRenderFpsPie()) LOGGER.warn("RareCandy render took " + (System.currentTimeMillis() - startTime) + "ms")
     }
 }
 
+fun <T:AbstractContainerMenu> Holder<MenuType<*>>.asValue(): MenuType<T> = this.value() as MenuType<T>
