@@ -16,6 +16,8 @@ dependencies {
 
     //Cobblemon
     modCompileOnly("com.cobblemon:mod:${project.properties["cobblemon_version"]}")
+    modCompileOnly("curse.maven:irisshaders-455508:6213635")
+
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.moulberry:mixinconstraints:1.0.9")
 }

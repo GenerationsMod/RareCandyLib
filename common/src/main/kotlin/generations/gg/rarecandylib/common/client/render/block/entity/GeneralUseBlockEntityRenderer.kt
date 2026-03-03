@@ -12,6 +12,8 @@ import generations.gg.rarecandylib.common.client.render.rarecandy.*
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry.prepForBER
 import generations.gg.rarecandylib.common.client.render.rarecandy.animation.FixedFrameAnimationInstance
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
+import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.instanceOrNull
+import generations.gg.rarecandylib.common.util.set
 import gg.generations.rarecandy.renderer.animation.AnimationInstance
 import gg.generations.rarecandy.renderer.rendering.ObjectInstance
 import gg.generations.rarecandy.renderer.storage.AnimatedObjectInstance
@@ -80,7 +82,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
                 instance.setVariant(variant)
             }
 
-            instance.transformationMatrix().set(stack.last().pose())
+            instance.set(stack.last())
 
             (instance as BlockObjectInstance).light = packedLight
             if (blockEntity is TintProvider) instance.tint = blockEntity.tint
@@ -124,9 +126,11 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
 
         val offset = blockEntity.blockPos.toVec3d().subtract(Minecraft.getInstance().cameraEntity!!.position())
 
-        primeInstance.transformationMatrix().set(stack.last().pose()).translate(offset.x.toFloat(),
-            offset.y.toFloat(), offset.z.toFloat()
-        )
+        stack.translate(offset.x.toFloat(),
+            offset.y.toFloat(), offset.z.toFloat())
+
+        primeInstance.set(stack.last())
+        
         (primeInstance as BlockLightValueProvider).light = packedLight
         if (blockEntity is TintProvider) (primeInstance as BlockAnimatedObjectInstance).tint = blockEntity.tint
 
@@ -145,7 +149,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
         stack: PoseStack,
         objectInstance: ObjectInstance
     ) {
-        objectInstance.transformationMatrix().set(stack.last().pose())
+        objectInstance.set(stack.last())
 
         val model = ModelRegistry[location]
         model?.render(objectInstance, source)

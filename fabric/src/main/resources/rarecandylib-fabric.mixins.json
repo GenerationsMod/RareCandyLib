@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "generations.gg.rarecandylib.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+    "client.KeyboardHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

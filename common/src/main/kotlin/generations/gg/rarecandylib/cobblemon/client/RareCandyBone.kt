@@ -12,13 +12,13 @@ import com.cobblemon.mod.common.pokemon.Species
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
-import generations.gg.rarecandylib.cobblemon.client.IVariant
 import generations.gg.rarecandylib.common.client.render.CobblemonInstanceProvider
 import generations.gg.rarecandylib.common.client.render.rarecandy.CompiledModel
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
-import generations.gg.rarecandylib.common.client.render.rarecandy.instanceOrNull
+import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.instanceOrNull
 import generations.gg.rarecandylib.common.client.render.tera.battleTeraType
 import generations.gg.rarecandylib.common.client.render.tera.tint
+import generations.gg.rarecandylib.common.util.set
 import net.minecraft.client.Minecraft
 import net.minecraft.client.model.geom.ModelPart
 import net.minecraft.resources.ResourceLocation
@@ -33,8 +33,12 @@ private val RenderContext.form: FormData?
 private val RenderContext.species: Species?
     get() = this.request(RenderContext.SPECIES)?.let { PokemonSpecies.getByIdentifier(it) }
 
+var teraActiveFunction: (RenderContext) -> Boolean = { true }
+
 class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assumes Bone will always be a ModelPart */(
-    location: ResourceLocation): ModelPart(mutableListOf(), MAP), Supplier<Bone>, Bone {
+    location: ResourceLocation,
+
+): ModelPart(mutableListOf(), MAP), Supplier<Bone>, Bone {
     private val objectSupplier: () -> CompiledModel? = { ModelRegistry[location] }
 
     override fun getChildren(): Map<String, Bone> {
@@ -78,7 +82,7 @@ class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assu
         }
         if (model.renderObject!!.isReady) {
             instance.light = packedLight
-            instance.teraActive = context.request(RenderContext.ASPECTS)?.contains("terastal_active") ?: false
+            instance.teraActive = teraActiveFunction.invoke(context)
             if (instance.teraActive) {
                 context.entity.instanceOrNull<PokemonEntity>()?.battleTeraType?.let {
                     instance.teraTint.set(it.tint)
@@ -93,7 +97,8 @@ class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assu
             stack.pushPose()
             stack.mulPose(ROTATION_CORRECTION)
             stack.scale(-scale, -scale, scale)
-            instance.transformationMatrix().set(stack.last().pose())
+
+            instance.set(stack.last())
             stack.popPose()
 
             model.render(instance, Minecraft.getInstance().renderBuffers().bufferSource())

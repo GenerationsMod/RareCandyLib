@@ -5,6 +5,7 @@ import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 import generations.gg.rarecandylib.common.client.render.CobblemonInstanceProvider;
 import generations.gg.rarecandylib.common.client.render.rarecandy.CobblemonInstance;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,7 +18,7 @@ public class PosableStateMixin implements CobblemonInstanceProvider {
 
     public @NotNull CobblemonInstance getInstance() {
         if (instance == null) {
-            instance = new CobblemonInstance(new Matrix4f(), new Matrix4f(), null);
+            instance = new CobblemonInstance(new Matrix4f(), new Matrix3f(), null);
         }
 
         return instance;

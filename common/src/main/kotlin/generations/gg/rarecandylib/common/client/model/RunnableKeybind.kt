@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFW
 object Keybinds {
     val keybindings = mutableListOf<RunnableKeybind>()
 
-    val TOGGLE_RENDERING = register("toggleShaderRendering", GLFW.GLFW_KEY_P, "rendering", Pipelines::toggleRendering)
+    val TOGGLE_RENDERING = register("Toggle Shading", GLFW.GLFW_KEY_P, "Rare Candy Lib", Pipelines::toggleRendering)
 
     private fun register(name: String, keyId: Int, category: String, runnable: Runnable) = RunnableKeybind(name, keyId, category, runnable).also(keybindings::add)
 
@@ -18,6 +18,8 @@ object Keybinds {
 
         return false
     }
+
+
 
     class RunnableKeybind(name: String, keyId: Int, category: String, private val runnable: Runnable) : KeyMapping(name, keyId, category) {
         fun onKeyPress(keyCode: Int, scanCode: Int, action: Int, modifiers: Int): Boolean {

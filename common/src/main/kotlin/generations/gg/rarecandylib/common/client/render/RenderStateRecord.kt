@@ -1,5 +1,6 @@
 package generations.gg.rarecandylib.common.client.render
 
+import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 
 object RenderStateRecord {
@@ -22,19 +23,19 @@ object RenderStateRecord {
     fun push() {
         readOnly = true;
         // Blend
-//        blendEnabled = GlStateManager.BLEND.mode.enabled
-//        srcRgb = GlStateManager.BLEND.srcRgb
-//        dstRgb = GlStateManager.BLEND.dstRgb
-//        srcAlpha = GlStateManager.BLEND.srcAlpha
-//        dstAlpha = GlStateManager.BLEND.dstAlpha
-//
-//        // Depth
-//        depthTestEnabled = GlStateManager.DEPTH.mode.enabled
-//        depthMask = GlStateManager.DEPTH.mask
-//        depthFunc = GlStateManager.DEPTH.func
-//
-//        // Cull
-//        cullEnabled = GlStateManager.CULL.enable.enabled
+        blendEnabled = GlStateManager.BLEND.mode.enabled
+        srcRgb = GlStateManager.BLEND.srcRgb
+        dstRgb = GlStateManager.BLEND.dstRgb
+        srcAlpha = GlStateManager.BLEND.srcAlpha
+        dstAlpha = GlStateManager.BLEND.dstAlpha
+
+        // Depth
+        depthTestEnabled = GlStateManager.DEPTH.mode.enabled
+        depthMask = GlStateManager.DEPTH.mask
+        depthFunc = GlStateManager.DEPTH.func
+
+        // Cull
+        cullEnabled = GlStateManager.CULL.enable.enabled
     }
 
     fun pop() {

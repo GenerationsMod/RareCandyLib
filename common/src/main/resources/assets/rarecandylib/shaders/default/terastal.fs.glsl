@@ -1,9 +1,10 @@
 #version 330 core
 
 in vec2 texCoord0;
-in vec4 vertexColor;
 in float vertexDistance;
-in vec4 lightMapColor;
+flat in vec3 fragNormal;
+flat in vec3 fragTangent;
+flat in vec3 fragBitangent;
 
 out vec4 outColor;
 
@@ -43,11 +44,6 @@ uniform float emiIntensity2;
 uniform float emiIntensity3;
 uniform float emiIntensity4;
 uniform float emiIntensity5;
-uniform bool useLight;
-
-uniform vec3 Light0_Direction;
-uniform vec3 Light1_Direction;
-
 
 #define MINECRAFT_LIGHT_POWER   (0.6)
 #define MINECRAFT_AMBIENT_LIGHT (0.4)
@@ -308,59 +304,90 @@ vec4 process(vec4 color) {
     return color;
 }
 
+mat3 getTBN() {
+    vec3 N = normalize(fragNormal);
+    vec3 T = normalize(fragTangent);
+    vec3 B = normalize(fragBitangent);
+    return mat3(T, B, N);
+}
+
 // ===== Tersaalization Effect =====
 
-#define TERA_LIGHT_DIRECT   vec3(0.3f, 0.9f, 0.0f)
-#define TERATYPE_TINT       vec3(0.161, 0.502, 0.937)
+#define TERATYPE_TINT         vec3(0.161, 0.502, 0.937)
 
-#define FACET_RES           8.0
-#define SHIMMER_BANDS       5.0
-#define GAMMA_CORRECTION    1.4
-#define SHIMMER_STRENGTH    0.8
-#define IRIDESCENCE_STRENGTH 0.2
-
-uniform bool useTera;
-uniform vec3 teraTint;
+#define FACET_RES             8.0
+#define SHIMMER_BANDS         5.0
+#define GAMMA_CORRECTION      1.4
+#define SHIMMER_STRENGTH      0.8
+#define IRIDESCENCE_STRENGTH  0.2
 
 in vec3 fragViewDir;
 in vec3 worldPos;
 
-vec3 calculateTersaalizationEffect(vec3 baseColor) {
-    vec3 N = normalize(cross(dFdx(worldPos), dFdy(worldPos)));
+vec3 calculateTersaalizationEffect(vec3 baseColor, vec2 uv) {
+    mat3 TBN = getTBN();
+
+    vec3 T = normalize(TBN[0]);
+    vec3 B = normalize(TBN[1]);
+    vec3 N = normalize(TBN[2]);
     vec3 V = normalize(fragViewDir);
 
-    // Fresnel rim lighting
-    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 5.0);
+    float NoV = clamp(dot(N, V), 0.0, 1.0);
+    float edge = 1.0 - NoV;
 
-    // Directional lighting response
-    float lightResponse = max(dot(N, TERA_LIGHT_DIRECT), 0.0);
+    float fresnel    = pow(edge, 3.5);
+    float thickness  = pow(edge, 1.6);
+    float innerGlow  = pow(edge, 1.2);
 
-    // Facet simulation via quantized normals
-    vec3 faceted = normalize(floor(N * FACET_RES + 0.5) / FACET_RES);
-    float facetResponse = pow(max(dot(faceted, V), 0.0), 6.0);
+    vec3 facetN = normalize(round(N * FACET_RES) / FACET_RES);
+    // Was pow(..., 8.0) – far too harsh
+    float facetResponse = pow(max(dot(facetN, V), 0.0), 4.0);
 
-    // Composite shimmer signal
-    float shimmer = fresnel * 0.5 + lightResponse * 0.3 + facetResponse * 0.8;
+    float tView = abs(dot(T, V));
+    float bView = abs(dot(B, V));
+    float anisotropic = pow(max(tView, bView * 0.7), 2.0);
+
+    float shimmer = 0.0;
+    shimmer += fresnel       * 0.25;
+    shimmer += thickness     * 0.30;
+    shimmer += innerGlow     * 0.25;
+    shimmer += facetResponse * 0.40;
+    shimmer += anisotropic   * 0.35;
+
     shimmer = pow(clamp(shimmer, 0.0, 1.0), GAMMA_CORRECTION);
 
-    // Posterization
-    shimmer = floor(shimmer * SHIMMER_BANDS) / SHIMMER_BANDS;
-
-    // Micro-noise based on 3D direction
-    float angleNoise = abs(sin(dot(N.xyz, vec3(12.9898, 78.233, 45.164)) * 43758.5453));
+    float angleNoise = abs(sin(dot(N, vec3(12.9898, 78.233, 45.164)) * 43758.5453));
     shimmer += angleNoise * 0.02;
+    shimmer = clamp(shimmer, 0.0, 1.0);
 
-    // Optional iridescent variation
-    vec3 iridescent = vec3(1.0, 0.9, 0.8) + vec3(0.05, -0.02, 0.03) * sin(shimmer * 20.0);
+    // Make the shell mask less picky
+    float shellMask = clamp(facetResponse * 0.5 + thickness * 0.5, 0.0, 1.0);
+    shellMask = smoothstep(0.08, 0.90, shellMask);
 
-    // Tint variation based on light response
-    vec3 directionalTint = mix(teraTint, vec3(1.0), lightResponse);
+    float baseLuma = dot(baseColor, vec3(0.2126, 0.7152, 0.0722));
+    float highlightPreserve = 1.0 - smoothstep(0.80, 0.98, baseLuma);
+    highlightPreserve = mix(0.50, 1.0, highlightPreserve);
 
-    // Final output
-    return baseColor
-    + directionalTint * shimmer * SHIMMER_STRENGTH
-    + iridescent * shimmer * IRIDESCENCE_STRENGTH;
+    shellMask *= highlightPreserve;
+
+    vec3 ambientTint = mix(TERATYPE_TINT, vec3(0.93, 0.98, 1.0), 0.5);
+    vec3 specTint    = mix(vec3(1.0), TERATYPE_TINT, 0.4);
+
+    vec3 addCrystal = ambientTint * shimmer * SHIMMER_STRENGTH;
+    addCrystal += specTint * facetResponse * (IRIDESCENCE_STRENGTH * 0.8);
+
+    addCrystal *= shellMask;
+
+    float maxBase   = max(max(baseColor.r, baseColor.g), baseColor.b);
+    float headroom  = 1.0 - maxBase;
+    float intensityScale = 0.50 + headroom * 1.00;
+
+    addCrystal *= intensityScale;
+
+    vec3 result = baseColor + addCrystal;
+    return clamp(result, 0.0, 1.0);
 }
+
 //////////////////////////////////////
 
 void main() {
@@ -371,13 +398,7 @@ void main() {
     }
 
     outColor.rgb *= tint;
-
-    if(useTera) {
-        outColor.rgb = calculateTersaalizationEffect(outColor.rgb);
-    } else if (useLight) {
-        outColor *= vertexColor;
-        outColor *= mix(lightMapColor, vec4(1, 1, 1, 1), texture(emission, texCoord0).r);
-    }
+    outColor.rgb = calculateTersaalizationEffect(outColor.rgb, texCoord0);
 
     outColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
 }

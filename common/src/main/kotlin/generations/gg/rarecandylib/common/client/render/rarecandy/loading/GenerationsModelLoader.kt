@@ -7,6 +7,7 @@ import gg.generations.rarecandy.renderer.components.MeshObject
 import gg.generations.rarecandy.renderer.components.MultiRenderObject
 import gg.generations.rarecandy.renderer.loading.ModelLoader
 import gg.generations.rarecandy.renderer.model.GLModel
+import org.joml.Matrix3f
 import org.joml.Matrix4f
 import java.io.InputStream
 import java.util.function.Supplier
@@ -49,7 +50,7 @@ class GenerationsModelLoader(numThreads: Int) : ModelLoader(numThreads) {
                 glCalls
             },
             { `object`: MultiRenderObject<MeshObject?>? ->
-                model.guiInstance = CobblemonInstance(Matrix4f(), Matrix4f(), null)
+                model.guiInstance = CobblemonInstance(Matrix4f(), Matrix3f(), null)
                 model.guiInstance!!.link(`object`)
                 if (`object`!!.scale == 0f) `object`.scale = 1.0f
             }

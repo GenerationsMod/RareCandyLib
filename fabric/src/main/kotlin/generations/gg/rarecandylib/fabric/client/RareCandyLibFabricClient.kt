@@ -6,6 +6,7 @@ import generations.gg.rarecandylib.common.client.RareCandyLibClientImplementatio
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.loader.api.FabricLoader
@@ -22,18 +23,6 @@ import java.util.concurrent.Executor
 class RareCandyLibFabricClient : ClientModInitializer, RareCandyLibClientImplementation{
     override fun onInitializeClient() {
         RareCandyLibClient.onInitialize(this)
-
-        RareCandyLibClient.TOGGLE_CONDITIONS_KEY =
-            KeyBindingHelper.registerKeyBinding(
-                KeyMapping(
-                    "Toggle Battle Conditions",
-                    InputConstants.Type.KEYSYM,
-                    GLFW.GLFW_KEY_V,
-                    "Generations"
-                )
-                // TODO: replace name/category with lang i'm lazy
-            )
-
         ClientLifecycleEvents.CLIENT_STARTED.register(RareCandyLibClient::setupClient)
 
     }

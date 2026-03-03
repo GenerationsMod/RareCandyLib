@@ -14,7 +14,7 @@ object CobblemonModule {
             ResourceLocation.fromNamespaceAndPath(resourceLocation.namespace, File(resourceLocation.path).getName()) to
                     (ModelPart(
                         emptyList(),
-                        mapOf("root" to RareCandyBone(resourceLocation))
+                        mapOf("root" to RareCandyBone(resourceLocation,))
                     )) as Bone
 
         })

@@ -3,7 +3,7 @@
   "id": "rarecandylib",
   "version": "${version}",
   "name": "Rare Candy Lib",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Adds the Rare Candy Renderer",
   "authors": [
     "Waterpicker"
   ],
@@ -11,8 +11,8 @@
     "homepage": "https://fabricmc.net/",
     "sources": ""
   },
-  "license": "Insert License Here",
-  "icon": "assets/examplemod/icon.png",
+  "license": "GNU GPL 3.0",
+  "icon": "assets/rarecandylib/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -24,13 +24,11 @@
   },
   "mixins": [
     "rarecandylib-common.mixins.json",
-    "rarecandylib-cobblemon.mixins.json"
+    "rarecandylib-cobblemon.mixins.json",
+    "rarecandylib-fabric.mixins.json"
   ],
   "depends": {
     "fabric": "*",
     "minecraft": ">=1.21.1"
-  },
-  "suggests": {
-    "cobbelmon": ">=1.6.1"
   }
 }

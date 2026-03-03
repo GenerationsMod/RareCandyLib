@@ -1,0 +1,37 @@
+modLoader="kotlinforforge"
+loaderVersion="[5.3,)"
+issueTrackerURL = ""
+license = "GNU GPL 3.0"
+
+[[mods]]
+modId = "rarecandylib"
+version = "${version}"
+displayName = "Rare Candy Lib"
+authors = "Waterpicker"
+description = '''
+'''
+logoFile = "assets/rarecandylib/icon.png"
+catalogueImageIcon = "assets/rarecandylib/icon.png"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
+[[mixins]]
+config="rarecandylib-common.mixins.json"
+
+[[mixins]]
+config="rarecandylib-cobblemon.mixins.json"
+
+[[dependencies.rarecandylib]]
+modId="neoforge"
+mandatory=true
+versionRange="[${neoforge},)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.rarecandylib]]
+modId="minecraft"
+mandatory=true
+versionRange="[${minecraft},)"
+ordering="NONE"
+side="BOTH"

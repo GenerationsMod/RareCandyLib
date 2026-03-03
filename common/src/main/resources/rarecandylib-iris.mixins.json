@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "package": "generations.gg.rarecandylib.iris.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin",
+  "minVersion": "0.8",
+  "client": [
+    "VanillaRenderingPipelineMixin"
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

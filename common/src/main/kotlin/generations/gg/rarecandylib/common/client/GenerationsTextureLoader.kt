@@ -27,7 +27,7 @@ import kotlin.random.Random
 object GenerationsTextureLoader : ITextureLoader() {
     val REGULAR = mutableMapOf<String, ResourceLocation>()
     val CODEC = Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
-    val RARE_CANDY = FileToIdConverter("textures", "rare_candy_texture.json")
+    val RARE_CANDY = FileToIdConverter("textures", "rare_candy_textures.json")
     val gson = Gson()
 
 

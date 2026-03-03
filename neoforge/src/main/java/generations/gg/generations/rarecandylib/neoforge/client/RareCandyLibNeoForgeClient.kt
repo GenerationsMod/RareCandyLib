@@ -8,22 +8,14 @@ import generations.gg.rarecandylib.common.client.RareCandyLibClientImplementatio
 import generations.gg.rarecandylib.common.client.model.Keybinds
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
-import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.resources.PreparableReloadListener
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EntityType
-import net.minecraft.world.level.block.entity.BlockEntity
-import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModList
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
 import net.neoforged.neoforge.client.event.ClientTickEvent
-import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterLayerDefinitions
-import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers
 import net.neoforged.neoforge.client.event.InputEvent
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
@@ -40,7 +32,7 @@ import java.util.ArrayList
  *Quigg, WaterPicker
  */
 @Mod(value = RareCandyLib.MOD_ID, dist = [Dist.CLIENT])
-        class GenerationsCoreClientForge(eventBus: IEventBus): RareCandyLibClientImplementation {
+class RareCandyLibClientNeoForge(eventBus: IEventBus): RareCandyLibClientImplementation {
     private var reloadableResources: MutableList<PreparableReloadListener> = ArrayList()
 
     /**
@@ -48,20 +40,16 @@ import java.util.ArrayList
      * @param eventBus The event bus to register the client side of the mod to.
      */
     init {
-
-//        GenerationsCoreClient.onInitialize(this) //COmment this out when doing datagen. Datagen mod doens't like it for some reason.
-
         onInitialize(this)
 
         eventBus.addListener { event: RegisterKeyMappingsEvent ->
-                RareCandyLibClient.TOGGLE_CONDITIONS_KEY = KeyMapping(
-                        "Toggle Battle Conditions",
+                RareCandyLibClient.TOGGLE_SHADING = KeyMapping(
+                        "Toggle Shading",
                         InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_V,
-                        "Generations"
+                        GLFW.GLFW_KEY_P,
+                        "Rare Candy Lib"
                 )
-            // TODO: replace name/category with lang i'm lazy
-            event.register(RareCandyLibClient.TOGGLE_CONDITIONS_KEY)
+            event.register(RareCandyLibClient.TOGGLE_SHADING)
         }
 
 
@@ -74,9 +62,6 @@ import java.util.ArrayList
 
         with(NeoForge.EVENT_BUS) {
             addListener<InputEvent.Key> { Keybinds.pressDown(it.key, it.scanCode, it.action, it.modifiers) }
-            addListener<ClientTickEvent.Post> {
-                RareCandyLibClient.onTick()
-            }
         }
 
 

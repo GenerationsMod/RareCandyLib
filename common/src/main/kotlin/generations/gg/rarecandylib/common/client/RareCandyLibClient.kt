@@ -38,16 +38,15 @@ object MatrixCache {
 }
 
 object RareCandyLibClient {
-    lateinit var TOGGLE_CONDITIONS_KEY: KeyMapping
-    var toggleConditions: Boolean = true
+    lateinit var TOGGLE_SHADING: KeyMapping
 
     fun onInitialize(implementation: RareCandyLibClientImplementation) {
 //        if (GenerationsCore.CONFIG.client.useRenderDoc) {
-//            try {
-//                System.loadLibrary("renderdoc")
-//            } catch (e: UnsatisfiedLinkError) {
-//                LOGGER.warn("Attempted to use renderdoc without renderdoc installed.")
-//            }
+            try {
+                System.loadLibrary("renderdoc")
+            } catch (e: UnsatisfiedLinkError) {
+                LOGGER.warn("Attempted to use renderdoc without renderdoc installed.")
+            }
 //        }
 
         ITextureLoader.setInstance(GenerationsTextureLoader)
@@ -64,8 +63,8 @@ object RareCandyLibClient {
 
 
     fun onTick() {
-        if (::TOGGLE_CONDITIONS_KEY.isInitialized && TOGGLE_CONDITIONS_KEY.consumeClick()) {
-            toggleConditions = !toggleConditions
+        if (::TOGGLE_SHADING.isInitialized && TOGGLE_SHADING.consumeClick()) {
+            Pipelines.toggleRendering()
         }
     }
 
@@ -87,8 +86,6 @@ object RareCandyLibClient {
     }
 
     fun secondRenderPass() {
-//        renderHighlightedPath(stack, Minecraft.getInstance().levelRenderer.ticks, camera)
-
         RenderStateRecord.push()
         RenderSystem.enableDepthTest()
         RenderSystem.defaultBlendFunc()

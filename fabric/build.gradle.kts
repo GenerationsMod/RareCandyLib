@@ -54,6 +54,8 @@ dependencies {
     //Cobblemon
     modApi("com.cobblemon:fabric:${project.properties["cobblemon_version"]}")
     modRuntimeOnly("net.fabricmc:fabric-language-kotlin:${project.properties["fabric_language_kotlin"]}")
+    modRuntimeOnly("curse.maven:irisshaders-455508:6213635")
+    modRuntimeOnly("curse.maven:sodium-394468:6382649")
 }
 
 tasks {

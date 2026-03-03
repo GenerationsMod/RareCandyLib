@@ -100,6 +100,10 @@ tasks {
     }
 }
 
+tasks.remapJar {
+    atAccessWideners.add("rarecandylib.accesswidener")
+}
+
 private fun DependencyHandlerScope.localLib(name: String, version: String): Any {
     return files("../libs/$name-$version.jar")
 }
