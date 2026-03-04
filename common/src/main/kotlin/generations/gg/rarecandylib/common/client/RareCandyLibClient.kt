@@ -19,6 +19,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 private operator fun BlockPos.minus(pos: BlockPos): BlockPos {
     return this.subtract(pos)
@@ -38,6 +40,9 @@ object MatrixCache {
 }
 
 object RareCandyLibClient {
+    @JvmField
+    var LOGGER: Logger = LoggerFactory.getLogger("RareCandyLib")
+    @JvmStatic var defferedRendering: Boolean = false
     lateinit var TOGGLE_SHADING: KeyMapping
 
     fun onInitialize(implementation: RareCandyLibClientImplementation) {
@@ -75,7 +80,7 @@ object RareCandyLibClient {
 
             ModelRegistry.init()
 
-            Pipelines.onInitialize(event.resourceManager)
+            Pipelines.onInitialize(event.resourceManager,)
 
         })
     }
@@ -86,12 +91,13 @@ object RareCandyLibClient {
     }
 
     fun secondRenderPass() {
-        RenderStateRecord.push()
-        RenderSystem.enableDepthTest()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.enableBlend()
-        renderRareCandyTransparent()
-        RenderStateRecord.pop()
+
+            RenderStateRecord.push()
+            RenderSystem.enableDepthTest()
+            RenderSystem.defaultBlendFunc()
+            RenderSystem.enableBlend()
+            renderRareCandyTransparent()
+            RenderStateRecord.pop()
 
         ModelRegistry.worldRareCandy.end()
 
@@ -104,9 +110,13 @@ object RareCandyLibClient {
         MatrixCache.projectionMatrix = RenderSystem.getProjectionMatrix()
         MatrixCache.viewMatrix = RenderSystem.getModelViewMatrix()
 
+
+
         RenderStateRecord.push()
 
+        Pipelines.bindFunction.invoke(false)
         renderRareCandySolid()
+        Pipelines.bindFunction.invoke(true)
         renderRareCandyTransparent()
 
         RenderStateRecord.pop()

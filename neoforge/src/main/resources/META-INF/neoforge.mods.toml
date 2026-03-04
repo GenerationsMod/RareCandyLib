@@ -22,6 +22,9 @@ config="rarecandylib-common.mixins.json"
 [[mixins]]
 config="rarecandylib-cobblemon.mixins.json"
 
+[[mixins]]
+config="rarecandylib-iris.mixins.json"
+
 [[dependencies.rarecandylib]]
 modId="neoforge"
 mandatory=true

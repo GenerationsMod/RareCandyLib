@@ -5,9 +5,13 @@
   "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin",
   "minVersion": "0.8",
   "client": [
-    "VanillaRenderingPipelineMixin"
+    "ExtendedShaderMixin",
+    "IrisMixin",
+    "IrisRenderingPipelineMixin",
+    "PipelineManagerMixin"
   ],
   "mixins": [
+
   ],
   "injectors": {
     "defaultRequire": 1

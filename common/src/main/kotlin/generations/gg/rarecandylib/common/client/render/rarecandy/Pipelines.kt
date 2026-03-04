@@ -5,10 +5,7 @@ import generations.gg.rarecandylib.common.RareCandyLib.id
 import generations.gg.rarecandylib.common.client.GenerationsTextureLoader
 import generations.gg.rarecandylib.common.client.MatrixCache
 import generations.gg.rarecandylib.common.client.model.ModelContextProviders.TintProvider
-import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.ONE
-import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.ZERO
-import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.terastal
-import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.useLegacy
+import generations.gg.rarecandylib.iris.client.ExtendedShaderAccess
 import gg.generations.rarecandy.pokeutils.BlendType
 import gg.generations.rarecandy.pokeutils.CullType
 import gg.generations.rarecandy.pokeutils.reader.ITextureLoader
@@ -19,6 +16,9 @@ import gg.generations.rarecandy.renderer.model.material.PipelineRegistry
 import gg.generations.rarecandy.renderer.pipeline.Pipeline
 import gg.generations.rarecandy.renderer.pipeline.UniformUploadContext
 import gg.generations.rarecandy.renderer.storage.AnimatedObjectInstance
+import net.irisshaders.iris.Iris
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline
+import net.irisshaders.iris.pipeline.programs.ShaderKey
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.resources.ResourceManager
@@ -29,12 +29,21 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import kotlin.math.sin
 
-object Pipelines {
-    private var initalize: Boolean = false
-    private val ONE = Vector3f(1f, 1f, 1f)
-    private val ZERO = Vector3f(0f, 0f, 0f)
 
-    private var useLegacy = false
+
+object Pipelines {
+    private var manager: ResourceManager? = null
+
+    private var initalize: Boolean = false
+    public val ONE = Vector3f(1f, 1f, 1f)
+    public val ZERO = Vector3f(0f, 0f, 0f)
+
+    var pipelineFunction: (ResourceManager) -> Pair<Pipeline, Pipeline> = {
+        createRegular(it) to createTerastal(it)
+    }
+    var bindFunction: (Boolean) -> Unit = {}
+
+    var useLegacy = false
 
     @JvmStatic
     fun toggleRendering() {
@@ -53,20 +62,37 @@ object Pipelines {
      */
     @JvmStatic
     fun onInitialize(manager: ResourceManager) {
-        if (!initalize) {
+        this.manager = manager
+        onInitialize()
+    }
 
-            terastal?.destroy()
-            regular?.destroy()
+    fun onInitialize() {
+        terastal?.destroy()
+        regular?.destroy()
 
-            terastal = createTerastal(manager)
-            regular = createRegular(manager)
+        val pair = pipelineFunction.invoke(manager!!)
 
+        regular = pair.first
+        terastal = pair.second
 
-            initalize = true
+        PipelineRegistry.setFunction({ matrial, instance, obj ->
+            if (instance.instanceOrNull<CobblemonInstance>()?.teraActive ?: false) terastal else regular
+        })
+    }
 
-            PipelineRegistry.setFunction({ matrial, instance, obj ->
-                if (instance.instanceOrNull<CobblemonInstance>()?.teraActive ?: false) terastal else regular
-            })
+    @JvmStatic
+    fun onInitialize(
+        pipelineFunction: (ResourceManager) -> Pair<Pipeline, Pipeline> = {
+                         createRegular(it) to createTerastal(it)
+                     },
+                     bindFunction: (Boolean) -> Unit = {}
+    ) {
+        //        if (!initalize) {
+        this.bindFunction = bindFunction
+        this.pipelineFunction = pipelineFunction
+
+        if(manager != null) {
+            onInitialize()
         }
     }
 
@@ -276,7 +302,7 @@ object Pipelines {
 
     fun pingpong(time: Double): Double = (sin(time * Math.PI * 2) * 7 + 7).toInt().toDouble()
 
-    private fun Pipeline.Builder.supplyColorArray(
+    fun Pipeline.Builder.supplyColorArray(
         name: String,
         function: (UniformUploadContext) -> FloatArray
     ): Pipeline.Builder = this.supplyUniform(name) {
@@ -284,62 +310,62 @@ object Pipelines {
         it.uniform().upload4f(color[0], color[1], color[2], color[3])
     }
 
-    private fun Pipeline.Builder.supplyMat4s(
+    fun Pipeline.Builder.supplyMat4s(
         name: String,
         function: (UniformUploadContext) -> Array<Matrix4f>
     ): Pipeline.Builder = this.supplyUniform(name) { it.uniform().uploadMat4fs(function.invoke(it)) }
 
-    private fun Pipeline.Builder.supplyMat4(
+    fun Pipeline.Builder.supplyMat4(
         name: String,
         function: (UniformUploadContext) -> Matrix4f
     ): Pipeline.Builder = this.supplyUniform(name) { it.uniform().uploadMat4f(function.invoke(it)) }
 
-    private fun Pipeline.Builder.supplyMat3(
+    fun Pipeline.Builder.supplyMat3(
         name: String,
         function: (UniformUploadContext) -> Matrix3f
     ): Pipeline.Builder = this.supplyUniform(name) { it.uniform().uploadMat3f(function.invoke(it)) }
 
-    private fun Pipeline.Builder.supplyVec2(
+    fun Pipeline.Builder.supplyVec2(
         name: String,
         function: (UniformUploadContext) -> Vector2f
     ): Pipeline.Builder = this.supplyUniform(name) { it.uniform().uploadVec2f(function.invoke(it)) }
 
-    private fun Pipeline.Builder.supplyVec3(
+    fun Pipeline.Builder.supplyVec3(
         name: String,
         function: (UniformUploadContext) -> Vector3f
     ): Pipeline.Builder = this.supplyUniform(name) { it.uniform().uploadVec3f(function.invoke(it)) }
 
-    private fun Pipeline.Builder.supplyFloatUniform(
+    fun Pipeline.Builder.supplyFloatUniform(
         name: String,
         function: (UniformUploadContext) -> Float
     ): Pipeline.Builder = this.supplyUniform(name) { it.uniform().uploadFloat(function.invoke(it)) }
 
-    private fun Pipeline.Builder.supplyEnumUniform(name: String, value: Enum<*>): Pipeline.Builder =
+    fun Pipeline.Builder.supplyEnumUniform(name: String, value: Enum<*>): Pipeline.Builder =
         this.supplyInt(name) { value.ordinal }
 
-    private fun Pipeline.Builder.supplyInt(name: String, function: (UniformUploadContext) -> Int): Pipeline.Builder =
+    fun Pipeline.Builder.supplyInt(name: String, function: (UniformUploadContext) -> Int): Pipeline.Builder =
         this.also { this.supplyUniform(name) { it.uniform().uploadInt(function.invoke(it)) } }
 
     public inline fun <reified T> Any?.instanceOrNull(): T? = this as? T
 
-    private val UniformUploadContext.isStatueMaterial: Boolean
+    val UniformUploadContext.isStatueMaterial: Boolean
         get() = statueMaterial != null
 
     private val UniformUploadContext.statueMaterial: String?
         get() = this.instance().instanceOrNull<StatueInstance>()?.material?.takeIf { GenerationsTextureLoader.has(it) }
 
-    private val UniformUploadContext.transform: Transform
+    val UniformUploadContext.transform: Transform
         get() = this.instance().instanceOrNull<AnimatedObjectInstance>()?.getTransform(this.material.materialName)
             ?.takeIf { !it.isUnit } ?: this.`object`().getTransform(this.instance().variant())
 
 
-    private fun UniformUploadContext.getTextureOrOther(
+    fun UniformUploadContext.getTextureOrOther(
         function: (UniformUploadContext) -> String?,
         supplier: () -> ITexture
     ): ITexture = GenerationsTextureLoader.getTexture(function.invoke(this))
         ?.takeUnless { texture -> texture === GenerationsTextureLoader.MissingTextureProxy } ?: supplier.invoke()
 
-    private fun Pipeline.Builder.supplyTexture(
+    fun Pipeline.Builder.supplyTexture(
         name: String,
         slot: Int,
         function: (UniformUploadContext) -> ITexture
@@ -348,7 +374,7 @@ object Pipelines {
         it.uniform().uploadInt(slot)
     }
 
-    private fun Pipeline.Builder.supplyBooleanUniform(
+    fun Pipeline.Builder.supplyBooleanUniform(
         name: String,
         function: (UniformUploadContext) -> Boolean
     ): Pipeline.Builder {
