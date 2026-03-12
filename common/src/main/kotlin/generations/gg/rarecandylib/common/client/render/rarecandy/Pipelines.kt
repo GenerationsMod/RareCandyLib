@@ -2,10 +2,9 @@ package generations.gg.rarecandylib.common.client.render.rarecandy
 
 import com.mojang.blaze3d.systems.RenderSystem
 import generations.gg.rarecandylib.common.RareCandyLib.id
-import generations.gg.rarecandylib.common.client.GenerationsTextureLoader
+import generations.gg.rarecandylib.common.client.TextureLoader
 import generations.gg.rarecandylib.common.client.MatrixCache
 import generations.gg.rarecandylib.common.client.model.ModelContextProviders.TintProvider
-import generations.gg.rarecandylib.iris.client.ExtendedShaderAccess
 import gg.generations.rarecandy.pokeutils.BlendType
 import gg.generations.rarecandy.pokeutils.CullType
 import gg.generations.rarecandy.pokeutils.reader.ITextureLoader
@@ -16,9 +15,6 @@ import gg.generations.rarecandy.renderer.model.material.PipelineRegistry
 import gg.generations.rarecandy.renderer.pipeline.Pipeline
 import gg.generations.rarecandy.renderer.pipeline.UniformUploadContext
 import gg.generations.rarecandy.renderer.storage.AnimatedObjectInstance
-import net.irisshaders.iris.Iris
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline
-import net.irisshaders.iris.pipeline.programs.ShaderKey
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.resources.ResourceManager
@@ -34,9 +30,8 @@ import kotlin.math.sin
 object Pipelines {
     private var manager: ResourceManager? = null
 
-    private var initalize: Boolean = false
-    public val ONE = Vector3f(1f, 1f, 1f)
-    public val ZERO = Vector3f(0f, 0f, 0f)
+    val ONE = Vector3f(1f, 1f, 1f)
+    val ZERO = Vector3f(0f, 0f, 0f)
 
     var pipelineFunction: (ResourceManager) -> Pair<Pipeline, Pipeline> = {
         createRegular(it) to createTerastal(it)
@@ -52,10 +47,6 @@ object Pipelines {
 
     private var terastal: Pipeline? = null
     private var regular: Pipeline? = null
-
-//    fun getPipeline(): Pipeline {
-//        return pipeline!!
-//    }
 
     /**
      * Called on first usage of RareCandy to reduce lag later on
@@ -75,8 +66,8 @@ object Pipelines {
         regular = pair.first
         terastal = pair.second
 
-        PipelineRegistry.setFunction({ matrial, instance, obj ->
-            if (instance.instanceOrNull<CobblemonInstance>()?.teraActive ?: false) terastal else regular
+        PipelineRegistry.setFunction({ _, instance, _ ->
+            if (instance.instanceOrNull<MinecraftObjectInstance>()?.teraActive ?: false) terastal else regular
         })
     }
 
@@ -118,7 +109,7 @@ object Pipelines {
 
         .supplyTexture("diffuse", 0) {
             it.instance()
-                .instanceOrNull<StatueInstance>()?.material?.let { GenerationsTextureLoader.getTextureOrNull(it) }
+                .instanceOrNull<StatueInstance>()?.material?.let { TextureLoader.getTextureOrNull(it) }
                 ?: it.getTextureOrOther({ it.material.images().diffuse }) { ITextureLoader.instance().nuetralFallback }
         }
         .supplyTexture(
@@ -133,7 +124,7 @@ object Pipelines {
 
         .supplyInt("colorMethod") { it.material.colorMethod }
         .supplyInt("effect") { it.material.effect }
-        .supplyVec3("tint") { it.instance().instanceOrNull<CobblemonInstance>()?.tint?.takeIf { it != ZERO } ?: ONE }
+        .supplyVec3("tint") { it.instance().instanceOrNull<MinecraftObjectInstance>()?.tint?.takeIf { it != ZERO } ?: ONE }
 
         .supplyInt("frame") { pingpong(MinecraftClientGameProvider.timePassed).toInt() }
 
@@ -168,7 +159,7 @@ object Pipelines {
         .supplyVec3("Light0_Direction") { RenderSystem.shaderLightDirections[0] }
         .supplyVec3("Light1_Direction") { RenderSystem.shaderLightDirections[1] }
         .supplyVec3("teraTint") {
-            it.instance().instanceOrNull<CobblemonInstance>()?.teraTint?.takeIf { it != ZERO } ?: ONE
+            it.instance().instanceOrNull<MinecraftObjectInstance>()?.teraTint?.takeIf { it != ZERO } ?: ONE
         }
 
         .prePostDraw({ material ->
@@ -212,7 +203,7 @@ object Pipelines {
 
         .supplyTexture("diffuse", 0) {
             it.instance()
-                .instanceOrNull<StatueInstance>()?.material?.let { GenerationsTextureLoader.getTextureOrNull(it) }
+                .instanceOrNull<StatueInstance>()?.material?.let { TextureLoader.getTextureOrNull(it) }
                 ?: it.getTextureOrOther({ it.material.images().diffuse }) { ITextureLoader.instance().nuetralFallback }
         }
         .supplyTexture(
@@ -238,7 +229,7 @@ object Pipelines {
             ctx.uniform().upload2i(light and 0xFFFF, light shr 16 and 0xFFFF)
         }
 
-        .supplyVec3("tint") { it.instance().instanceOrNull<CobblemonInstance>()?.tint?.takeIf { it != ZERO } ?: ONE }
+        .supplyVec3("tint") { it.instance().instanceOrNull<MinecraftObjectInstance>()?.tint?.takeIf { it != ZERO } ?: ONE }
 
         .supplyInt("frame") { pingpong(MinecraftClientGameProvider.timePassed).toInt() }
 
@@ -352,7 +343,7 @@ object Pipelines {
         get() = statueMaterial != null
 
     private val UniformUploadContext.statueMaterial: String?
-        get() = this.instance().instanceOrNull<StatueInstance>()?.material?.takeIf { GenerationsTextureLoader.has(it) }
+        get() = this.instance().instanceOrNull<StatueInstance>()?.material?.takeIf { TextureLoader.has(it) }
 
     val UniformUploadContext.transform: Transform
         get() = this.instance().instanceOrNull<AnimatedObjectInstance>()?.getTransform(this.material.materialName)
@@ -362,8 +353,8 @@ object Pipelines {
     fun UniformUploadContext.getTextureOrOther(
         function: (UniformUploadContext) -> String?,
         supplier: () -> ITexture
-    ): ITexture = GenerationsTextureLoader.getTexture(function.invoke(this))
-        ?.takeUnless { texture -> texture === GenerationsTextureLoader.MissingTextureProxy } ?: supplier.invoke()
+    ): ITexture = TextureLoader.getTexture(function.invoke(this))
+        ?.takeUnless { texture -> texture === TextureLoader.MissingTextureProxy } ?: supplier.invoke()
 
     fun Pipeline.Builder.supplyTexture(
         name: String,

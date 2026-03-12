@@ -2,7 +2,6 @@ package generations.gg.rarecandylib.common.client
 
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.BufferUploader
-import generations.gg.rarecandylib.common.RareCandyLib.LOGGER
 import generations.gg.rarecandylib.common.RareCandyLib.id
 import generations.gg.rarecandylib.common.client.render.RenderStateRecord
 import generations.gg.rarecandylib.common.client.render.rarecandy.MinecraftClientGameProvider
@@ -13,26 +12,9 @@ import gg.generations.rarecandy.renderer.rendering.RareCandy
 import gg.generations.rarecandy.renderer.rendering.RenderStage
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import net.minecraft.core.BlockPos
-import net.minecraft.core.Holder
-import net.minecraft.world.inventory.AbstractContainerMenu
-import net.minecraft.world.inventory.MenuType
-import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-private operator fun BlockPos.minus(pos: BlockPos): BlockPos {
-    return this.subtract(pos)
-}
-
-private operator fun Vec3.times(scale: Float): Vec3 {
-    return this.multiply(scale.toDouble(), scale.toDouble(), scale.toDouble())
-}
-
-private operator fun Vec3.minus(vec3: Vec3): Vec3 {
-    return this.subtract(vec3)
-}
 
 object MatrixCache {
     var projectionMatrix = Matrix4f()
@@ -46,15 +28,14 @@ object RareCandyLibClient {
     lateinit var TOGGLE_SHADING: KeyMapping
 
     fun onInitialize(implementation: RareCandyLibClientImplementation) {
-//        if (GenerationsCore.CONFIG.client.useRenderDoc) {
-            try {
-                System.loadLibrary("renderdoc")
-            } catch (e: UnsatisfiedLinkError) {
-                LOGGER.warn("Attempted to use renderdoc without renderdoc installed.")
-            }
+//            try {
+//                System.loadLibrary("renderdoc")
+//            } catch (e: UnsatisfiedLinkError) {
+//                LOGGER.warn("Attempted to use renderdoc without renderdoc installed.")
+//            }
 //        }
 
-        ITextureLoader.setInstance(GenerationsTextureLoader)
+        ITextureLoader.setInstance(TextureLoader)
 
         implementation.registerResourceReloader("model_registry".id(), CompiledModelLoader(), emptyList())
 
@@ -133,7 +114,7 @@ object RareCandyLibClient {
 
     fun renderRareCandy(stage: RenderStage) {
 
-        var startTime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
         RenderSystem.enableDepthTest()
         BufferUploader.reset()
 
@@ -141,5 +122,3 @@ object RareCandyLibClient {
         if (shouldRenderFpsPie()) LOGGER.warn("RareCandy render took " + (System.currentTimeMillis() - startTime) + "ms")
     }
 }
-
-fun <T:AbstractContainerMenu> Holder<MenuType<*>>.asValue(): MenuType<T> = this.value() as MenuType<T>

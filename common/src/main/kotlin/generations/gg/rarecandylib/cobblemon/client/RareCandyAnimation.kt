@@ -1,7 +1,7 @@
 package generations.gg.rarecandylib.cobblemon.client
 
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
-import generations.gg.rarecandylib.common.client.render.CobblemonInstanceProvider
+import generations.gg.rarecandylib.common.client.render.MinecraftObjectInstanceProvider
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
 import gg.generations.rarecandy.renderer.animation.Animation
 import gg.generations.rarecandy.renderer.components.AnimatedMeshObject
@@ -24,7 +24,7 @@ data class RareCandyAnimation(private val model: ResourceLocation, private val n
         animationSeconds: Float,
         intensity: Float
     ): Boolean {
-        val instance = context.request(RenderContext.POSABLE_STATE)?.takeIf { it is CobblemonInstanceProvider }?.let { it as CobblemonInstanceProvider }?.instance ?: return false
+        val instance = context.request(RenderContext.POSABLE_STATE)?.takeIf { it is MinecraftObjectInstanceProvider }?.let { it as MinecraftObjectInstanceProvider }?.instance ?: return false
 
         val anim = animation ?: let {
             return false

@@ -13,10 +13,8 @@ import gg.generations.rarecandy.renderer.animation.Animation
 import gg.generations.rarecandy.renderer.rendering.RareCandy
 import net.minecraft.core.Direction
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import java.util.function.BiConsumer
-import kotlin.compareTo
 
 object ModelRegistry {
     private val modelsToLoad: MutableList<ResourceLocation> = mutableListOf()
@@ -48,10 +46,10 @@ object ModelRegistry {
 
     fun tick() {
         ensureOnRenderThread {
-            val time = MinecraftClientGameProvider.timePassed;
+            val time = MinecraftClientGameProvider.timePassed
 
             modelsToLoad.forEach {
-                CACHE[it] = of(it);
+                CACHE[it] = of(it)
                 TIMES[it] = time
             }
 
@@ -73,18 +71,18 @@ object ModelRegistry {
     @JvmStatic
     operator fun get(location: ResourceLocation): CompiledModel? {
         return try {
-            if(modelsToLoad.contains(location)) null;
+            if(modelsToLoad.contains(location)) null
             else {
                 CACHE[location]?.also { TIMES[location] = MinecraftClientGameProvider.timePassed } ?: run { modelsToLoad += location }.let { null }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
 
     @JvmStatic
     fun init() {
-        CompiledModel.Companion.init()
+        CompiledModel.init()
     }
 
     fun prepForBER(stack: PoseStack, supplier: AngleProvider) {

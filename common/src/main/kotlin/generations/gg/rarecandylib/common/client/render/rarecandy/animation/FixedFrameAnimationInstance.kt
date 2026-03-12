@@ -16,10 +16,6 @@ class FixedFrameAnimationInstance(animation: Animation?, frame: Float) : Animati
 //        super.updateStart(secondsPassed);
     }
 
-    override fun shouldDestroy(): Boolean {
-        return super.shouldDestroy()
-    }
-
     fun setCurrentTime(frame: Float) {
         currentTime = frame
     }

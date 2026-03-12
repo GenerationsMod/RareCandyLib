@@ -12,14 +12,11 @@ import com.cobblemon.mod.common.pokemon.Species
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
-import generations.gg.rarecandylib.common.client.render.CobblemonInstanceProvider
+import generations.gg.rarecandylib.common.client.render.MinecraftObjectInstanceProvider
 import generations.gg.rarecandylib.common.client.render.rarecandy.CompiledModel
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
 import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.instanceOrNull
-import generations.gg.rarecandylib.common.client.render.tera.battleTeraType
-import generations.gg.rarecandylib.common.client.render.tera.tint
 import generations.gg.rarecandylib.common.util.set
-import net.minecraft.client.Minecraft
 import net.minecraft.client.model.geom.ModelPart
 import net.minecraft.resources.ResourceLocation
 import java.util.*
@@ -33,7 +30,7 @@ private val RenderContext.form: FormData?
 private val RenderContext.species: Species?
     get() = this.request(RenderContext.SPECIES)?.let { PokemonSpecies.getByIdentifier(it) }
 
-var teraActiveFunction: (RenderContext) -> Boolean = { true }
+var teraActiveFunction: (RenderContext) -> Boolean = { false }
 
 class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assumes Bone will always be a ModelPart */(
     location: ResourceLocation,
@@ -65,7 +62,7 @@ class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assu
         color: Int
     ) {
 
-        val instance = context.request(RenderContext.Companion.POSABLE_STATE).instanceOrNull<CobblemonInstanceProvider>()?.instance
+        val instance = context.request(RenderContext.Companion.POSABLE_STATE).instanceOrNull<MinecraftObjectInstanceProvider>()?.instance
 
         if(instance != null) {
             let {  }
@@ -101,7 +98,7 @@ class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assu
             instance.set(stack.last())
             stack.popPose()
 
-            model.render(instance, Minecraft.getInstance().renderBuffers().bufferSource())
+            model.render(instance)
         }
     }
 

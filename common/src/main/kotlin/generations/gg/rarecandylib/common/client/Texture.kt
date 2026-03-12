@@ -54,7 +54,7 @@ class Texture(private var details: TextureDetails?) : ITexture {
             details = null
         }
 
-        assert(slot >= 0 && slot <= 31)
+        assert(slot in 0..31)
         GL13C.glActiveTexture(GL13C.GL_TEXTURE0 + slot)
         GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, this.id)
     }

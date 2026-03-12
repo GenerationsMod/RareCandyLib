@@ -86,7 +86,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
 
             (instance as BlockObjectInstance).light = packedLight
             if (blockEntity is TintProvider) instance.tint = blockEntity.tint
-            model.render(instance, buffersource)
+            model.render(instance)
         }
     }
 
@@ -140,7 +140,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
 
         if(provider != null) instance.currentAnimation?.instanceOrNull<FixedFrameAnimationInstance>()?.takeIf { it.currentTime != provider.frame }?.run { this.currentTime = provider.frame }
 
-        model.render(instance, buffersource)
+        model.render(instance)
     }
 
     protected fun renderResourceLocation(
@@ -152,7 +152,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
         objectInstance.set(stack.last())
 
         val model = ModelRegistry[location]
-        model?.render(objectInstance, source)
+        model?.render(objectInstance)
     }
 
     override fun shouldRenderOffScreen(blockEntity: T): Boolean {

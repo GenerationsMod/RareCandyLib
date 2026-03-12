@@ -10,11 +10,11 @@ import org.joml.Matrix3f
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
-open class CobblemonInstance(transformationMatrix: Matrix4f, normalMatrix: Matrix3f, materialId: String?) : AnimatedObjectInstance(transformationMatrix, normalMatrix, materialId), BlockLightValueProvider, TeraProvider {
+open class MinecraftObjectInstance(transformationMatrix: Matrix4f, normalMatrix: Matrix3f, variant: String?) : AnimatedObjectInstance(transformationMatrix, normalMatrix, variant), BlockLightValueProvider, TeraProvider {
     var matrixTransforms: Array<Matrix4f> = AnimationController.NO_ANIMATION
     var offsets: Transform? = null
     val tint: Vector3f = Vector3f()
-    override var teraActive: Boolean = true
+    override var teraActive: Boolean = false
     val teraTint: Vector3f = Vector3f()
 
     fun getOffset(material: String?): Transform? {

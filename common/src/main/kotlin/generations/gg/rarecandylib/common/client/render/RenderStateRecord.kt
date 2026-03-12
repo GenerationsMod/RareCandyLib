@@ -6,36 +6,23 @@ import com.mojang.blaze3d.systems.RenderSystem
 object RenderStateRecord {
     private var readOnly = false
 
-    var blendEnabled: Boolean = false
-    var srcRgb: Int = 0
-    var dstRgb: Int = 0
-    var srcAlpha: Int = 0
-    var dstAlpha: Int = 0
+    @JvmStatic var blendEnabled: Boolean = false
+    @JvmStatic var srcRgb: Int = 0
+    @JvmStatic var dstRgb: Int = 0
+    @JvmStatic var srcAlpha: Int = 0
+    @JvmStatic var dstAlpha: Int = 0
 
-    var depthTestEnabled: Boolean = false
-    var depthMask: Boolean = false
-    var depthFunc: Int = 0
+    @JvmStatic var depthTestEnabled: Boolean = false
+    @JvmStatic var depthMask: Boolean = false
+    @JvmStatic var depthFunc: Int = 0
 
-    var cullEnabled: Boolean = false
+    @JvmStatic var cullEnabled: Boolean = false
 
-    fun isActive() = readOnly
+    @JvmStatic val isActive: Boolean
+        get() = readOnly
 
     fun push() {
-        readOnly = true;
-        // Blend
-        blendEnabled = GlStateManager.BLEND.mode.enabled
-        srcRgb = GlStateManager.BLEND.srcRgb
-        dstRgb = GlStateManager.BLEND.dstRgb
-        srcAlpha = GlStateManager.BLEND.srcAlpha
-        dstAlpha = GlStateManager.BLEND.dstAlpha
-
-        // Depth
-        depthTestEnabled = GlStateManager.DEPTH.mode.enabled
-        depthMask = GlStateManager.DEPTH.mask
-        depthFunc = GlStateManager.DEPTH.func
-
-        // Cull
-        cullEnabled = GlStateManager.CULL.enable.enabled
+        readOnly = true
     }
 
     fun pop() {

@@ -15,7 +15,6 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModList
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
-import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.InputEvent
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
@@ -61,7 +60,7 @@ class RareCandyLibClientNeoForge(eventBus: IEventBus): RareCandyLibClientImpleme
         }
 
         with(NeoForge.EVENT_BUS) {
-            addListener<InputEvent.Key> { Keybinds.pressDown(it.key, it.scanCode, it.action, it.modifiers) }
+            addListener<InputEvent.Key> { Keybinds.pressDown(it.key, it.action) }
         }
 
 
@@ -77,7 +76,7 @@ class RareCandyLibClientNeoForge(eventBus: IEventBus): RareCandyLibClientImpleme
             reloader: PreparableReloadListener,
             dependencies: Collection<ResourceLocation>
     ) {
-        System.out.println("[GenerationsTextureLoaderLoader] Loading ${reloader.name}")
+        RareCandyLibClient.LOGGER.error("Loading ${reloader.name}")
         reloadableResources.add(reloader)
     }
 

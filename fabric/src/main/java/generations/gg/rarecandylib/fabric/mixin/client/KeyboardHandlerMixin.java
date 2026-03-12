@@ -17,7 +17,7 @@ public class KeyboardHandlerMixin {
     @Inject(method = "keyPress", at = @At("RETURN"), cancellable = true)
     public void onRawKey(long handle, int key, int scanCode, int action, int modifiers, CallbackInfo info) {
         if (handle == this.minecraft.getWindow().getWindow()) {
-            if (Keybinds.INSTANCE.pressDown(key, scanCode, action, modifiers)) info.cancel();
+            if (Keybinds.INSTANCE.pressDown(key, action)) info.cancel();
         }
     }
 }

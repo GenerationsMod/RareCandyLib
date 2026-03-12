@@ -1,9 +1,7 @@
-package generations.gg.rarecandylib.common.client.render.tera
+package generations.gg.rarecandylib.cobblemon.client
 
 import com.cobblemon.mod.common.api.types.tera.TeraType
 import com.cobblemon.mod.common.api.types.tera.TeraTypes
-import com.cobblemon.mod.common.battles.BattleRegistry
-import com.cobblemon.mod.common.battles.BattleRegistry.getBattle
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import org.joml.Vector3f
 

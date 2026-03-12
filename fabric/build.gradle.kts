@@ -54,8 +54,6 @@ dependencies {
     //Cobblemon
     modApi("com.cobblemon:fabric:${project.properties["cobblemon_version"]}")
     modRuntimeOnly("net.fabricmc:fabric-language-kotlin:${project.properties["fabric_language_kotlin"]}")
-//    modRuntimeOnly("curse.maven:irisshaders-455508:6213635")
-//    modRuntimeOnly("curse.maven:sodium-394468:6382649")
 }
 
 tasks {
@@ -69,7 +67,8 @@ tasks {
                 "minecraft" to project.properties["minecraft_version"],
                 "cobblemon" to project.properties["cobblemon_version"],
                 "wthit" to project.properties["WTHIT"],
-                "description" to project.properties["description"]
+                "description" to project.properties["description"],
+                "fabric_language_kotlin" to project.properties["fabric_language_kotlin"]
             ))
         }
 
@@ -81,9 +80,6 @@ tasks {
 
     shadowJar {
         exclude(mutableListOf(
-            "generations/gg/generations/core/generationscore/fabric/datagen/**",
-            "data/forge/**",
-            "data/generations_core/forge/**",
             "architectury.common.json",
             ".cache/**"
         ))
@@ -98,6 +94,6 @@ tasks {
     }
 }
 
-private fun DependencyHandlerScope.localLib(name: String, version: String): Any {
+private fun localLib(name: String, version: String): Any {
     return files("../libs/$name-$version.jar")
 }

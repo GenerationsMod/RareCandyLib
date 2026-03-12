@@ -8,7 +8,6 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.serialization.Codec
 import com.mojang.serialization.JsonOps
 import generations.gg.rarecandylib.common.client.render.rarecandy.ITextureWithResourceLocation
-import generations.gg.rarecandylib.common.RareCandyLib
 import generations.gg.rarecandylib.common.RareCandyLib.id
 import gg.generations.rarecandy.pokeutils.reader.ITextureLoader
 import gg.generations.rarecandy.renderer.loading.ITexture
@@ -24,7 +23,7 @@ import java.io.IOException
 import kotlin.jvm.optionals.getOrNull
 import kotlin.random.Random
 
-object GenerationsTextureLoader : ITextureLoader() {
+object TextureLoader : ITextureLoader() {
     val REGULAR = mutableMapOf<String, ResourceLocation>()
     val CODEC = Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
     val RARE_CANDY = FileToIdConverter("textures", "rare_candy_textures.json")

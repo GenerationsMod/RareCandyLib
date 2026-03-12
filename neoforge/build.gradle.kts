@@ -79,7 +79,7 @@ tasks {
     }
 
     shadowJar {
-        exclude("generations/gg/generations/core/generationscore/forge/datagen/**",
+        exclude(
             "org/lwjgl/system//**",
             "org/lwjgl/BufferUtils.class",
             "org/lwjgl/CLongBuffer.class",
