@@ -22,6 +22,7 @@
   "mixins": [
     "rarecandylib-common.mixins.json",
     "rarecandylib-cobblemon.mixins.json",
+    "rarecandylib-iris.mixins.json",
     "rarecandylib-fabric.mixins.json"
   ],
   "depends": {

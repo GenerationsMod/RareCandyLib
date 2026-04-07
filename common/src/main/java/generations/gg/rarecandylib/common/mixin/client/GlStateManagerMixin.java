@@ -40,6 +40,7 @@ public class GlStateManagerMixin {
 
     @Inject(method = "_enableDepthTest", at = @At("RETURN"))
     private static void recordDepthTestEnable(CallbackInfo ci) {
+        if(RenderStateRecord.isActive()) return;
         RenderStateRecord.setDepthTestEnabled(true);
     }
 

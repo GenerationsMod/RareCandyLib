@@ -12,6 +12,7 @@ import com.cobblemon.mod.common.pokemon.Species
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
+import generations.gg.rarecandylib.cobblemon.client.species
 import generations.gg.rarecandylib.common.client.render.MinecraftObjectInstanceProvider
 import generations.gg.rarecandylib.common.client.render.rarecandy.CompiledModel
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry

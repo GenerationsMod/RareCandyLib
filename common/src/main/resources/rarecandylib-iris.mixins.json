@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "generations.gg.rarecandylib.iris.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+    "client.IrisRenderingPipelineMixin"
+  ],
+  "mixins": [
+    "client.IrisMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

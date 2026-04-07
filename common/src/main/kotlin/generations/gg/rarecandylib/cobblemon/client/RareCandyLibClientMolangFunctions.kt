@@ -38,7 +38,7 @@ object RareCandyLibClientMolangFunctions {
             val anim = pkStateful(group, animation)
 
             val excludedLabels = mutableSetOf<String>()
-            var curve: WaveFunction = /*{ t ->
+            var curve: WaveFunction = { t ->
                 if (t < 0.1) {
                     t * 10
                 } else if (t < 0.9) {
@@ -46,7 +46,7 @@ object RareCandyLibClientMolangFunctions {
                 } else {
                     1F
                 }
-            }*/ { 1f } //TODO: revert once we get around to adding proper curve input to the resource packs.
+            }
             for (index in 2 until params.params.size) {
                 val param = params.get<MoValue>(index)
                 if (param is ObjectValue<*>) {

@@ -17,14 +17,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 object MatrixCache {
-    var projectionMatrix = Matrix4f()
-    var viewMatrix = Matrix4f()
+    @JvmStatic var projectionMatrix = Matrix4f()
+    @JvmStatic var viewMatrix = Matrix4f()
 }
 
 object RareCandyLibClient {
     @JvmField
     var LOGGER: Logger = LoggerFactory.getLogger("RareCandyLib")
-    @JvmStatic var defferedRendering: Boolean = false
+    var isIrisRenderingImpl: () -> Boolean = { false }
+    @JvmStatic val isIrisRendering: Boolean get() = isIrisRenderingImpl.invoke()
     lateinit var TOGGLE_SHADING: KeyMapping
 
     fun onInitialize(implementation: RareCandyLibClientImplementation) {
@@ -41,7 +42,7 @@ object RareCandyLibClient {
 
         RareCandy.DEBUG_THREADS = true
 
-        if(implementation.isModLoaded("cobbelmon")) generations.gg.rarecandylib.cobblemon.client.CobblemonModule.initialize()
+//        if(implementation.isModLoaded("cobbelmon")) generations.gg.rarecandylib.cobblemon.client.CobblemonModule.initialize()
 
 //        VaryingModelRepository.registerFactory(".pk", { resourceLocation, resource) -> new Pair<>(, b -> (Bone) new ModelPart(RareCandyBone.Companion.getCUBE_LIST(), Map.of("root", new RareCandyBone(resourceLocation))}));
 
@@ -88,15 +89,14 @@ object RareCandyLibClient {
     fun firstRenderPass() {
         ModelRegistry.worldRareCandy.update(MinecraftClientGameProvider.timePassed)
 
-        MatrixCache.projectionMatrix = RenderSystem.getProjectionMatrix()
-        MatrixCache.viewMatrix = RenderSystem.getModelViewMatrix()
-
-
 
         RenderStateRecord.push()
 
+        RenderSystem.enableDepthTest()
+        RenderSystem.depthMask(true)
         Pipelines.bindFunction.invoke(false)
         renderRareCandySolid()
+        RenderSystem.depthMask(false)
         Pipelines.bindFunction.invoke(true)
         renderRareCandyTransparent()
 
