@@ -4,10 +4,11 @@
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [
-    "client.IrisRenderingPipelineMixin"
+    "client.ExtendedShaderAccessor",
+    "client.IrisRenderingPipelineMixin",
+    "client.IrisMixin"
   ],
   "mixins": [
-    "client.IrisMixin"
   ],
   "injectors": {
     "defaultRequire": 1

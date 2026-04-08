@@ -4,6 +4,8 @@ import com.mojang.blaze3d.systems.RenderSystem
 import generations.gg.rarecandylib.common.RareCandyLib.id
 import generations.gg.rarecandylib.common.client.TextureLoader
 import generations.gg.rarecandylib.common.client.MatrixCache
+import generations.gg.rarecandylib.common.client.RareCandyLibClient
+import generations.gg.rarecandylib.common.client.TeraProvider
 import generations.gg.rarecandylib.common.client.model.ModelContextProviders.TintProvider
 import gg.generations.rarecandy.pokeutils.BlendType
 import gg.generations.rarecandy.pokeutils.CullType
@@ -25,18 +27,28 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import kotlin.math.sin
 
+data class ShaderSet(val regular: Pipeline, val terastal: Pipeline) {
+    fun destroy() {
+        regular.destroy()
+        terastal.destroy()
+    }
 
+    fun getPipeline(isTeraActive: Boolean): Pipeline = if(isTeraActive) terastal else regular
+
+    companion object {
+        fun create(manager: ResourceManager, category: String): ShaderSet {
+            return ShaderSet(
+                Pipelines.createRegular(manager, category),
+                Pipelines.createTerastal(manager, category)
+            )
+        }
+    }
+}
 
 object Pipelines {
-    private var manager: ResourceManager? = null
-
+    var alternateShaderProvider: () -> ShaderSet? = { null }
     val ONE = Vector3f(1f, 1f, 1f)
     val ZERO = Vector3f(0f, 0f, 0f)
-
-    var pipelineFunction: (ResourceManager) -> Pair<Pipeline, Pipeline> = {
-        createRegular(it) to createTerastal(it)
-    }
-    var bindFunction: (Boolean) -> Unit = {}
 
     var useLegacy = false
 
@@ -45,51 +57,23 @@ object Pipelines {
         useLegacy = !useLegacy
     }
 
-    private var terastal: Pipeline? = null
-    private var regular: Pipeline? = null
 
-    /**
-     * Called on first usage of RareCandy to reduce lag later on
-     */
-    @JvmStatic
-    fun onInitialize(manager: ResourceManager) {
-        this.manager = manager
-        onInitialize()
-    }
+    private lateinit var default: ShaderSet
+    private var firstInit = true;
 
-    fun onInitialize() {
-        terastal?.destroy()
-        regular?.destroy()
+    fun onInitialize(manager: ResourceManager, category: String = "default") {
+        if(!firstInit) default.destroy()
 
-        val pair = pipelineFunction.invoke(manager!!)
+        firstInit = false;
 
-        regular = pair.first
-        terastal = pair.second
+        default = ShaderSet.create(manager, "default")
 
-        PipelineRegistry.setFunction({ _, instance, _ ->
-            if (instance.instanceOrNull<MinecraftObjectInstance>()?.teraActive ?: false) terastal else regular
-        })
-    }
-
-    @JvmStatic
-    fun onInitialize(
-        pipelineFunction: (ResourceManager) -> Pair<Pipeline, Pipeline> = {
-                         createRegular(it) to createTerastal(it)
-                     },
-                     bindFunction: (Boolean) -> Unit = {}
-    ) {
-        //        if (!initalize) {
-        this.bindFunction = bindFunction
-        this.pipelineFunction = pipelineFunction
-
-        if(manager != null) {
-            onInitialize()
-        }
+        PipelineRegistry.setFunction({ _, instance, _ -> return@setFunction (RareCandyLibClient.isIrisRendering.takeIf { it }?.let { alternateShaderProvider.invoke() } ?: default).getPipeline(instance.instanceOrNull<MinecraftObjectInstance>()?.teraActive ?: false) })
     }
 
     private val TEMP = Vector4f()
 
-    fun createTerastal(manager: ResourceManager): Pipeline = Pipeline.Builder()
+    fun createTerastal(manager: ResourceManager, category: String): Pipeline = Pipeline.Builder()
         .supplyBooleanUniform("legacy") { useLegacy }
         .supplyEnumUniform("FogShape", RenderSystem.getShaderFogShape())
         .supplyMat4("viewMatrix") { MatrixCache.viewMatrix }
@@ -179,11 +163,11 @@ object Pipelines {
                 }
             */
         })
-        .shader(manager, "shaders/default/terastal.vs.glsl", "shaders/default/terastal.fs.glsl")
+        .shader(manager, "shaders/$category/terastal.vs.glsl", "shaders/$category/terastal.fs.glsl")
         .build()
 
 
-    fun createRegular(manager: ResourceManager): Pipeline = Pipeline.Builder()
+    fun createRegular(manager: ResourceManager, category: String): Pipeline = Pipeline.Builder()
         .supplyBooleanUniform("legacy") { useLegacy }
         .supplyEnumUniform("FogShape", RenderSystem.getShaderFogShape())
         .supplyMat4("viewMatrix") { MatrixCache.viewMatrix }
@@ -283,7 +267,7 @@ object Pipelines {
                 }
             */
         })
-        .shader(manager, "shaders/default/regular.vs.glsl", "shaders/default/regular.fs.glsl")
+        .shader(manager, "shaders/$category/regular.vs.glsl", "shaders/$category/regular.fs.glsl")
         .build()
 
 

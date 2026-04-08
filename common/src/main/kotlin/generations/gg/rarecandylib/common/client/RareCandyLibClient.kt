@@ -34,7 +34,6 @@ object RareCandyLibClient {
 //            } catch (e: UnsatisfiedLinkError) {
 //                LOGGER.warn("Attempted to use renderdoc without renderdoc installed.")
 //            }
-//        }
 
         ITextureLoader.setInstance(TextureLoader)
 
@@ -62,7 +61,7 @@ object RareCandyLibClient {
 
             ModelRegistry.init()
 
-            Pipelines.onInitialize(event.resourceManager,)
+            Pipelines.onInitialize(event.resourceManager)
 
         })
     }
@@ -75,7 +74,9 @@ object RareCandyLibClient {
     fun secondRenderPass() {
 
             RenderStateRecord.push()
-            RenderSystem.enableDepthTest()
+        RenderSystem.depthMask(true)
+
+        RenderSystem.enableDepthTest()
             RenderSystem.defaultBlendFunc()
             RenderSystem.enableBlend()
             renderRareCandyTransparent()
@@ -94,11 +95,8 @@ object RareCandyLibClient {
 
         RenderSystem.enableDepthTest()
         RenderSystem.depthMask(true)
-        Pipelines.bindFunction.invoke(false)
         renderRareCandySolid()
-        RenderSystem.depthMask(false)
-        Pipelines.bindFunction.invoke(true)
-        renderRareCandyTransparent()
+        if(!isIrisRendering) renderRareCandyTransparent()
 
         RenderStateRecord.pop()
     }
