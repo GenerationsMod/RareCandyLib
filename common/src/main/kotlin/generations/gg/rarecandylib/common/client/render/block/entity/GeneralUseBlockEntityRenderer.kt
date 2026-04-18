@@ -14,7 +14,9 @@ import generations.gg.rarecandylib.common.client.render.rarecandy.animation.Fixe
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
 import generations.gg.rarecandylib.common.client.render.rarecandy.Pipelines.instanceOrNull
 import generations.gg.rarecandylib.common.util.set
+import gg.generations.rarecandy.renderer.animation.Animation
 import gg.generations.rarecandy.renderer.animation.AnimationInstance
+import gg.generations.rarecandy.renderer.components.MultiRenderObject
 import gg.generations.rarecandy.renderer.rendering.ObjectInstance
 import gg.generations.rarecandy.renderer.storage.AnimatedObjectInstance
 import net.minecraft.client.Minecraft
@@ -75,7 +77,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
 
         stack.scale(model.renderObject!!.scale, model.renderObject!!.scale, model.renderObject!!.scale)
 
-        val variant = blockEntity.variant
+        val variant = model.renderObject?.variantNameToId?.get(blockEntity.variant) ?: -1
 
         blockEntity.instanceArray!!.requireNoNulls().forEach { instance ->
             if (instance.materialId() != variant) {
@@ -83,9 +85,8 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
             }
 
             instance.set(stack.last())
-
-            (instance as BlockObjectInstance).light = packedLight
-            if (blockEntity is TintProvider) instance.tint = blockEntity.tint
+            instance.light = packedLight
+            if (blockEntity is TintProvider) instance.tint.set(blockEntity.tint)
             model.render(instance)
         }
     }
@@ -101,28 +102,24 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
         packedLight: Int
     ) {
         //TODO: Get this operational
-        val model = ModelRegistry[blockEntity]
+        val compiledModel = ModelRegistry[blockEntity] ?: return
+        val model = compiledModel.renderObject ?: return
 
-        if (model?.renderObject == null) return
-
-        stack.scale(model.renderObject!!.scale, model.renderObject!!.scale, model.renderObject!!.scale)
+        stack.scale(model.scale, model.scale, model.scale)
 
         val primeInstance = blockEntity.instanceArray!![0]!!
 
-        if (model.renderObject!!.isReady) {
-            primeInstance.link(model.renderObject)
+        val animationInstance = (primeInstance as AnimatedObjectInstance)
+        val animation = model.getAnimation(blockEntity.animation)
 
-            val animationInstance = (primeInstance as AnimatedObjectInstance)
-            val animation = animationInstance.animationsIfAvailable[blockEntity.animation]
-
-            if (animation != null) {
-                if (blockEntity is FrameProvider) {
-                    animationInstance.changeAnimation(FixedFrameAnimationInstance(animation, blockEntity.frame))
-                } else {
-                    animationInstance.changeAnimation(AnimationInstance(animation))
-                }
+        if (animation != null) {
+            if (blockEntity is FrameProvider) {
+                animationInstance.changeAnimation(FixedFrameAnimationInstance(animation, blockEntity.frame))
+            } else {
+                animationInstance.changeAnimation(AnimationInstance(animation))
             }
         }
+
 
         val offset = blockEntity.blockPos.toVec3d().subtract(Minecraft.getInstance().cameraEntity!!.position())
 
@@ -140,7 +137,7 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
 
         if(provider != null) instance.currentAnimation?.instanceOrNull<FixedFrameAnimationInstance>()?.takeIf { it.currentTime != provider.frame }?.run { this.currentTime = provider.frame }
 
-        model.render(instance)
+        compiledModel.render(instance)
     }
 
     protected fun renderResourceLocation(
@@ -159,6 +156,8 @@ open class GeneralUseBlockEntityRenderer<T>(ctx: BlockEntityRendererProvider.Con
         return true
     }
 }
+
+fun MultiRenderObject.getAnimation(name: String) : Animation? = this.animationNameToId[name]?.let { this.animations[it] }
 
 private fun BlockPos.toVec3d(): Vec3 {
     return Vec3(this.x.toDouble(), this.y.toDouble(), this.z.toDouble())

@@ -2,22 +2,15 @@ package generations.gg.rarecandylib.cobblemon.client
 
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import generations.gg.rarecandylib.common.client.render.MinecraftObjectInstanceProvider
+import generations.gg.rarecandylib.common.client.render.block.entity.getAnimation
 import generations.gg.rarecandylib.common.client.render.rarecandy.ModelRegistry
 import gg.generations.rarecandy.renderer.animation.Animation
-import gg.generations.rarecandy.renderer.components.AnimatedMeshObject
 import net.minecraft.resources.ResourceLocation
 
 data class RareCandyAnimation(private val model: ResourceLocation, private val name: String) {
 
     val animation: Animation?
-        get() {
-            val objects = ModelRegistry[model]?.renderObject ?: return null
-            if (objects.isReady) {
-                return (objects.objects[0] as AnimatedMeshObject).animations[name]
-            }
-
-            return null
-        }
+        get() = ModelRegistry[model]?.renderObject?.getAnimation(name)
 
     fun run(
         context: RenderContext,
@@ -41,8 +34,8 @@ data class RareCandyAnimation(private val model: ResourceLocation, private val n
 
         instance.setAnimation(anim)
 
-        instance. matrixTransforms = anim.getFrameTransform((currentSeconds).toDouble())
-        anim.getFrameOffset(instance.currentAnimation!!)
+        instance.matrixTransforms = anim.getFrameTransform((currentSeconds).toDouble())
+//        anim.getFrameOffset(instance.currentAnimation!!)
 
         return true
     }

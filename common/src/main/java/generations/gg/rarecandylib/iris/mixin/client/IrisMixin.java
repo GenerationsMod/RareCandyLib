@@ -23,6 +23,6 @@ public class IrisMixin {
 
     @Inject(method = "loadShaderpack", at = @At("RETURN"))
     private static void shaderPackLoaded(CallbackInfo ci) {
-        IrisModule.loadShader(currentPackName);
+//        IrisModule.loadShader(currentPackName);
     }
 }

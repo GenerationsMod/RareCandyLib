@@ -63,44 +63,41 @@ class RareCandyBone /*Remove when cobblemon doesn't have parts of code that assu
         color: Int
     ) {
 
-        val instance = context.request(RenderContext.Companion.POSABLE_STATE).instanceOrNull<MinecraftObjectInstanceProvider>()?.instance
+        val instance = context.request(RenderContext.Companion.POSABLE_STATE)
+            .instanceOrNull<MinecraftObjectInstanceProvider>()?.instance
 
-        if(instance != null) {
-            let {  }
-        }
+        val compiledModel = objectSupplier.invoke() ?: return
+        val model = compiledModel.renderObject ?: return
 
-        val model = objectSupplier.invoke()
-        if (model?.renderObject == null) return
-
-        var scale = model.renderObject!!.scale // / context.requires(RenderContext.SCALE)
+        var scale = model.scale // / context.requires(RenderContext.SCALE)
         if (instance == null) {
             return
         } else {
             scale *= 1f / (context.form?.baseScale ?: 1f)
         }
-        if (model.renderObject!!.isReady) {
-            instance.light = packedLight
-            instance.teraActive = teraActiveFunction.invoke(context)
-            if (instance.teraActive) {
-                context.entity.instanceOrNull<PokemonEntity>()?.battleTeraType?.let {
-                    instance.teraTint.set(it.tint)
-                }
+
+
+        instance.light = packedLight
+        instance.teraActive = teraActiveFunction.invoke(context)
+        if (instance.teraActive) {
+            context.entity.instanceOrNull<PokemonEntity>()?.battleTeraType?.let {
+                instance.teraTint.set(it.tint)
             }
-//            instance.tint.set(r, g, b) TODO: convert color int into its float components for tint.
-            val variant = getVariant(context)
-            if (variant != null) {
-                instance.setVariant(variant)
-            }
-
-            stack.pushPose()
-            stack.mulPose(ROTATION_CORRECTION)
-            stack.scale(-scale, -scale, scale)
-
-            instance.set(stack.last())
-            stack.popPose()
-
-            model.render(instance)
         }
+//            instance.tint.set(r, g, b) TODO: convert color int into its float components for tint.
+        val variant = model.variantNameToId.get(getVariant(context))
+        if (variant != null) {
+            instance.setVariant(variant)
+        }
+
+        stack.pushPose()
+        stack.mulPose(ROTATION_CORRECTION)
+        stack.scale(-scale, -scale, scale)
+
+        instance.set(stack.last())
+        stack.popPose()
+
+        compiledModel.render(instance)
     }
 
     private fun getVariant(context: RenderContext): String? {

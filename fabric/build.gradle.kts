@@ -1,11 +1,11 @@
-import com.hypherionmc.modpublisher.properties.CurseEnvironment
-import com.hypherionmc.modpublisher.properties.ModLoader
-import com.hypherionmc.modpublisher.properties.ReleaseType
-import kotlin.io.path.absolute
+//import com.hypherionmc.modpublisher.properties.CurseEnvironment
+//import com.hypherionmc.modpublisher.properties.ModLoader
+//import com.hypherionmc.modpublisher.properties.ReleaseType
+//import kotlin.io.path.absolute
 
 plugins {
     id("com.gradleup.shadow")
-    id("com.hypherionmc.modutils.modpublisher") version "2.+"
+//    id("com.hypherionmc.modutils.modpublisher") version "2.+"
 }
 architectury {
     platformSetupLoomIde()

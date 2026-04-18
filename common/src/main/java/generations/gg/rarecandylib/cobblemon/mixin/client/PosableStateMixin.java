@@ -18,7 +18,7 @@ public class PosableStateMixin implements MinecraftObjectInstanceProvider {
 
     public @NotNull MinecraftObjectInstance getInstance() {
         if (instance == null) {
-            instance = new MinecraftObjectInstance(new Matrix4f(), new Matrix3f(), null);
+            instance = new MinecraftObjectInstance(new Matrix4f(), new Matrix3f(), 0);
         }
 
         return instance;

@@ -1,6 +1,7 @@
 plugins {
     id("com.gradleup.shadow")
-    id("com.hypherionmc.modutils.modpublisher") version "2.+"}
+//    id("com.hypherionmc.modutils.modpublisher") version "2.+"
+}
 
 architectury {
     platformSetupLoomIde()
